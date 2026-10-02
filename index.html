@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PotretHouse Studio — Katalog & Booking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        serif: ['"Playfair Display"', 'serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#fcfbfa', 100: '#f4f0ec', 200: '#e5dcda',
+                            300: '#d1c3be', 800: '#4a423e', 900: '#2b2523',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .font-serif { font-family: 'Playfair Display', serif; }
+        .tab-content { transition: all 0.3s ease-in-out; }
+    </style>
+</head>
+<body class="bg-brand-50 text-brand-900 h-full flex flex-col antialiased">
+
+    <!-- Top Navigation Bar -->
+    <header class="bg-white/80 backdrop-blur-md border-b border-brand-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-full bg-brand-900 flex items-center justify-center text-white font-serif text-xl tracking-wider">P</div>
+                <div>
+                    <h1 class="font-serif text-2xl font-bold tracking-tight text-brand-900">PotretHouse</h1>
+                    <p class="text-xs text-gray-500 uppercase tracking-widest">Studio Booking</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <a href="https://wa.me/6281324192250" target="_blank" class="hidden sm:inline-flex items-center space-x-2 text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 px-3.5 py-2 rounded-full hover:bg-emerald-100 transition">
+                    <i class="fa-brands fa-whatsapp text-sm text-emerald-600"></i>
+                    <span>0813-2419-2250</span>
+                </a>
+                <a href="admin.html" title="Area Admin" class="w-9 h-9 rounded-full border border-brand-200 text-gray-400 hover:text-brand-900 hover:border-brand-900 flex items-center justify-center transition">
+                    <i class="fa-solid fa-lock text-xs"></i>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <div id="tab-client" class="tab-content space-y-8">
+            <!-- Hero Banner -->
+            <div class="bg-gradient-to-r from-brand-900 to-brand-800 rounded-3xl p-8 sm:p-12 text-white shadow-xl relative overflow-hidden">
+                <div class="absolute right-0 bottom-0 opacity-10 translate-x-10 translate-y-10">
+                    <i class="fa-solid fa-camera text-9xl"></i>
+                </div>
+                <div class="max-w-xl relative z-10">
+                    <span class="bg-white/10 text-brand-200 text-xs uppercase px-3 py-1 rounded-full font-semibold tracking-wider">Professional Photography Studio</span>
+                    <h2 class="font-serif text-3xl sm:text-4xl font-bold mt-4 mb-3">Abadikan Momen Terbaikmu Bersama PotretHouse</h2>
+                    <p class="text-brand-200 text-sm sm:text-base leading-relaxed">Pilih paket studio, hitung estimasi biaya secara otomatis, dan lakukan booking secara instan dengan sistem terintegrasi kami.</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Left: Rate Card & Calculator Menu -->
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-serif text-2xl font-bold text-brand-900">Pilih Paket & Kalkulator</h3>
+                        <span class="text-xs text-gray-500 bg-white px-3 py-1.5 rounded-full border border-brand-200 shadow-sm"><i class="fa-solid fa-calculator mr-1.5 text-brand-800"></i>Estimasi Real-Time</span>
+                    </div>
+
+                    <!-- Kategori Selector -->
+                    <div class="grid grid-cols-3 gap-3">
+                        <button onclick="setCategory('per-studio')" id="cat-per-studio" class="p-4 rounded-2xl border-2 text-left transition border-brand-900 bg-white shadow-sm">
+                            <div class="font-bold text-sm text-brand-900">Per-Studio Only</div>
+                            <div class="text-xs text-gray-500 mt-1">Mulai Rp 250K</div>
+                        </button>
+                        <button onclick="setCategory('studio-fotografer')" id="cat-studio-fotografer" class="p-4 rounded-2xl border-2 text-left transition border-brand-200 bg-white/60 hover:bg-white">
+                            <div class="font-bold text-sm text-brand-900">Studio + Fotografer</div>
+                            <div class="text-xs text-gray-500 mt-1">Mulai Rp 200K</div>
+                        </button>
+                        <button onclick="setCategory('all-akses')" id="cat-all-akses" class="p-4 rounded-2xl border-2 text-left transition border-brand-200 bg-white/60 hover:bg-white">
+                            <div class="font-bold text-sm text-brand-900">All Akses + Fotografer</div>
+                            <div class="text-xs text-gray-500 mt-1">Mulai Rp 300K</div>
+                        </button>
+                    </div>
+
+                    <!-- Options & Packages Card -->
+                    <div class="bg-white rounded-3xl p-6 sm:p-8 border border-brand-200 shadow-sm space-y-6">
+                        <!-- Jenis Komersil / Non Komersil -->
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-2">Tipe Sesi</label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <label class="flex items-center p-3 rounded-xl border border-brand-200 cursor-pointer hover:bg-brand-50 transition">
+                                    <input type="radio" name="tipeSesi" value="non-komersil" checked onchange="calculatePrice()" class="text-brand-900 focus:ring-brand-900">
+                                    <span class="ml-2.5 text-sm font-semibold">Non-Komersil (Personal/Graduation)</span>
+                                </label>
+                                <label class="flex items-center p-3 rounded-xl border border-brand-200 cursor-pointer hover:bg-brand-50 transition">
+                                    <input type="radio" name="tipeSesi" value="komersil" onchange="calculatePrice()" class="text-brand-900 focus:ring-brand-900">
+                                    <span class="ml-2.5 text-sm font-semibold">Komersil (Brand/Produk)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Durasi Selection -->
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-2">Pilih Durasi / Paket Waktu</label>
+                            <select id="select-durasi" onchange="calculatePrice()" class="w-full bg-brand-50 border border-brand-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-900 font-medium">
+                                <!-- Dynamic options injected via JS -->
+                            </select>
+                        </div>
+
+                        <!-- Add-ons / Additional Costs -->
+                        <div class="border-t border-brand-100 pt-6 space-y-4">
+                            <h4 class="font-semibold text-sm text-brand-900">Add-ons & Tambahan Layanan</h4>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="flex items-center justify-between p-3.5 bg-brand-50 rounded-xl border border-brand-200">
+                                    <div>
+                                        <div class="text-sm font-semibold">Extra Orang</div>
+                                        <div class="text-xs text-gray-500">Maks. 8 orang standar (+30K/org)</div>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <button type="button" onclick="adjustCount('extraPerson', -1)" class="w-7 h-7 bg-white rounded-lg border border-brand-200 flex items-center justify-center font-bold text-sm">-</button>
+                                        <span id="val-extraPerson" class="w-6 text-center font-bold text-sm">0</span>
+                                        <button type="button" onclick="adjustCount('extraPerson', 1)" class="w-7 h-7 bg-white rounded-lg border border-brand-200 flex items-center justify-center font-bold text-sm">+</button>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center justify-between p-3.5 bg-brand-50 rounded-xl border border-brand-200">
+                                    <div>
+                                        <div class="text-sm font-semibold">Extra Editing Foto</div>
+                                        <div class="text-xs text-gray-500">Tambahan touch up (+5K/foto)</div>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <button type="button" onclick="adjustCount('extraEdit', -1)" class="w-7 h-7 bg-white rounded-lg border border-brand-200 flex items-center justify-center font-bold text-sm">-</button>
+                                        <span id="val-extraEdit" class="w-6 text-center font-bold text-sm">0</span>
+                                        <button type="button" onclick="adjustCount('extraEdit', 1)" class="w-7 h-7 bg-white rounded-lg border border-brand-200 flex items-center justify-center font-bold text-sm">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Booking Form & Realtime Summary -->
+                <div class="space-y-6">
+                    <div class="bg-white rounded-3xl p-6 sm:p-8 border border-brand-200 shadow-xl sticky top-28 space-y-6">
+                        <h3 class="font-serif text-xl font-bold text-brand-900 border-b border-brand-100 pb-4">Ringkasan & Form Booking</h3>
+
+                        <!-- Price Breakdown -->
+                        <div class="space-y-3 text-sm">
+                            <div class="flex justify-between text-gray-600">
+                                <span id="label-paket-summary">Paket Studio</span>
+                                <span id="price-base" class="font-semibold text-brand-900">Rp 0</span>
+                            </div>
+                            <div id="row-addon-person" class="flex justify-between text-gray-600 hidden">
+                                <span>Extra Orang (<span id="count-person">0</span> org)</span>
+                                <span id="price-person" class="font-semibold text-brand-900">Rp 0</span>
+                            </div>
+                            <div id="row-addon-edit" class="flex justify-between text-gray-600 hidden">
+                                <span>Extra Edit (<span id="count-edit">0</span> foto)</span>
+                                <span id="price-edit" class="font-semibold text-brand-900">Rp 0</span>
+                            </div>
+                            <div class="border-t border-brand-200 pt-3 flex justify-between items-center">
+                                <span class="font-bold text-brand-900 text-base">Total Biaya</span>
+                                <span id="price-total" class="font-bold text-2xl text-brand-900">Rp 0</span>
+                            </div>
+                        </div>
+
+                        <!-- Form Booking Input -->
+                        <form id="booking-form" onsubmit="handleBookingSubmit(event)" class="space-y-4 pt-2">
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-1.5">Nama Lengkap / Klien</label>
+                                <input type="text" id="booking-nama" required placeholder="cth: Sinta Maharani" class="w-full bg-brand-50 border border-brand-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-900">
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-1.5">Tanggal Sesi</label>
+                                    <input type="date" id="booking-tgl" required class="w-full bg-brand-50 border border-brand-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-900">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-1.5">Jam</label>
+                                    <input type="time" id="booking-jam" required class="w-full bg-brand-50 border border-brand-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-900">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-1.5">Metode Pembayaran</label>
+                                <select id="booking-metode" onchange="togglePaymentField()" class="w-full bg-brand-50 border border-brand-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-900 font-medium">
+                                    <option value="transfer">Transfer Bank (Booking + DP)</option>
+                                    <option value="cash">Bayar di Tempat (Offline / Cash)</option>
+                                </select>
+                            </div>
+
+                            <div id="container-dp">
+                                <label class="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-1.5">Nominal DP (Transfer)</label>
+                                <input type="number" id="booking-dp" placeholder="cth: 100000" class="w-full bg-brand-50 border border-brand-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-900">
+                            </div>
+
+                            <button type="submit" id="btn-submit-booking" class="w-full bg-brand-900 text-white rounded-xl py-3.5 font-semibold text-sm hover:bg-brand-800 transition shadow-lg flex items-center justify-center space-x-2 disabled:opacity-60">
+                                <i class="fa-solid fa-paper-plane"></i>
+                                <span>Kirim Booking Sekarang</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Toast Notification Box -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-brand-900 text-white px-5 py-3 rounded-2xl shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 z-50 text-sm flex items-center space-x-3">
+        <i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+        <span id="toast-message">Berhasil menyimpan data!</span>
+    </div>
+
+    <script>
+        /* ============================================================
+           KONFIGURASI — GANTI DENGAN URL WEB APP APPS SCRIPT ANDA
+           ============================================================ */
+        const API_URL = 'https://script.google.com/macros/s/GANTI_DENGAN_ID_DEPLOYMENT_ANDA/exec';
+
+        /* ---------------- Rate Card ---------------- */
+        const rateCard = {
+            'per-studio': {
+                name: 'Per-Studio Only',
+                options: [
+                    { label: '1 Jam', price: 250000 },
+                    { label: '3 Jam', price: 700000 },
+                    { label: '6 Jam', price: 1300000 },
+                    { label: '8 Jam', price: 1700000 }
+                ]
+            },
+            'studio-fotografer': {
+                name: 'Rates Per-Studio + Fotografer',
+                options: [
+                    { label: '1 Jam', price: 200000 },
+                    { label: '2 Jam', price: 350000 },
+                    { label: '3 Jam', price: 500000 }
+                ]
+            },
+            'all-akses': {
+                name: 'Rates All Akses Studio + Fotografer',
+                options: [
+                    { label: '1 Jam', price: 300000 },
+                    { label: '2 Jam', price: 500000 },
+                    { label: '3 Jam', price: 700000 }
+                ]
+            }
+        };
+
+        let currentCategory = 'per-studio';
+        let addOnsCount = { extraPerson: 0, extraEdit: 0 };
+        let currentCalculatedTotal = 0;
+        let isSubmitting = false;
+
+        /* ---------------- API Helper ---------------- */
+        async function apiPost(payload) {
+            const res = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(payload)
+            });
+            return res.json();
+        }
+
+        /* ---------------- Kategori ---------------- */
+        function setCategory(cat) {
+            currentCategory = cat;
+            ['per-studio', 'studio-fotografer', 'all-akses'].forEach(c => {
+                const btn = document.getElementById(`cat-${c}`);
+                if (c === cat) {
+                    btn.className = "p-4 rounded-2xl border-2 text-left transition border-brand-900 bg-white shadow-sm";
+                } else {
+                    btn.className = "p-4 rounded-2xl border-2 text-left transition border-brand-200 bg-white/60 hover:bg-white";
+                }
+            });
+
+            const selectDurasi = document.getElementById('select-durasi');
+            selectDurasi.innerHTML = '';
+            rateCard[cat].options.forEach((opt, idx) => {
+                const optEl = document.createElement('option');
+                optEl.value = idx;
+                optEl.text = `${opt.label} - Rp ${opt.price.toLocaleString('id-ID')}`;
+                selectDurasi.appendChild(optEl);
+            });
+
+            calculatePrice();
+        }
+
+        /* ---------------- Counter Add-on ---------------- */
+        function adjustCount(type, delta) {
+            addOnsCount[type] = Math.max(0, addOnsCount[type] + delta);
+            document.getElementById(`val-${type}`).innerText = addOnsCount[type];
+            calculatePrice();
+        }
+
+        /* ---------------- Kalkulasi Harga ---------------- */
+        function calculatePrice() {
+            const selectedIdx = document.getElementById('select-durasi').value;
+            const packageData = rateCard[currentCategory].options[selectedIdx];
+
+            const basePrice = packageData.price;
+            const pricePerson = addOnsCount.extraPerson * 30000;
+            const priceEdit = addOnsCount.extraEdit * 5000;
+
+            currentCalculatedTotal = basePrice + pricePerson + priceEdit;
+
+            document.getElementById('label-paket-summary').innerText = `${rateCard[currentCategory].name} (${packageData.label})`;
+            document.getElementById('price-base').innerText = `Rp ${basePrice.toLocaleString('id-ID')}`;
+
+            if (addOnsCount.extraPerson > 0) {
+                document.getElementById('row-addon-person').classList.remove('hidden');
+                document.getElementById('count-person').innerText = addOnsCount.extraPerson;
+                document.getElementById('price-person').innerText = `Rp ${pricePerson.toLocaleString('id-ID')}`;
+            } else {
+                document.getElementById('row-addon-person').classList.add('hidden');
+            }
+
+            if (addOnsCount.extraEdit > 0) {
+                document.getElementById('row-addon-edit').classList.remove('hidden');
+                document.getElementById('count-edit').innerText = addOnsCount.extraEdit;
+                document.getElementById('price-edit').innerText = `Rp ${priceEdit.toLocaleString('id-ID')}`;
+            } else {
+                document.getElementById('row-addon-edit').classList.add('hidden');
+            }
+
+            document.getElementById('price-total').innerText = `Rp ${currentCalculatedTotal.toLocaleString('id-ID')}`;
+        }
+
+        function togglePaymentField() {
+            const metode = document.getElementById('booking-metode').value;
+            const dpContainer = document.getElementById('container-dp');
+            if (metode === 'cash') {
+                dpContainer.classList.add('hidden');
+            } else {
+                dpContainer.classList.remove('hidden');
+            }
+        }
+
+        /* ---------------- Submit Booking → Google Sheets ---------------- */
+        async function handleBookingSubmit(e) {
+            e.preventDefault();
+            if (isSubmitting) return;
+            isSubmitting = true;
+
+            const btn = document.getElementById('btn-submit-booking');
+            const originalBtnHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>Mengirim...</span>';
+
+            const nama = document.getElementById('booking-nama').value.trim();
+            const tgl = document.getElementById('booking-tgl').value;
+            const jam = document.getElementById('booking-jam').value;
+            const metode = document.getElementById('booking-metode').value;
+            const nomDp = metode === 'transfer'
+                ? (parseInt(document.getElementById('booking-dp').value) || 0)
+                : 0;
+            const isKomersil = document.querySelector('input[name="tipeSesi"]:checked').value === 'komersil' ? 'kom' : 'non';
+
+            const selectedIdx = document.getElementById('select-durasi').value;
+            const paketLabel = `${rateCard[currentCategory].name} - ${rateCard[currentCategory].options[selectedIdx].label}`;
+
+            const payload = {
+                action: 'create',
+                data: {
+                    nama: nama,
+                    tglDp: metode === 'transfer' ? tgl : '',
+                    nomDp: nomDp,
+                    tglLunas: '',
+                    nomLunas: 0,
+                    metode: metode,
+                    kategori: isKomersil,
+                    paket: paketLabel,
+                    tglSesi: tgl,
+                    jamSesi: jam,
+                    extraOrang: addOnsCount.extraPerson,
+                    extraEdit: addOnsCount.extraEdit,
+                    total: currentCalculatedTotal
+                }
+            };
+
+            try {
+                const result = await apiPost(payload);
+                if (result.status === 'success') {
+                    showToast(`Booking berhasil dicatat untuk ${nama}!`);
+
+                    e.target.reset();
+                    addOnsCount.extraPerson = 0;
+                    addOnsCount.extraEdit = 0;
+                    document.getElementById('val-extraPerson').innerText = '0';
+                    document.getElementById('val-extraEdit').innerText = '0';
+                    document.getElementById('booking-tgl').value = new Date().toISOString().split('T')[0];
+                    togglePaymentField();
+                    calculatePrice();
+                } else {
+                    showToast('Gagal: ' + (result.message || 'Terjadi kesalahan'));
+                }
+            } catch (err) {
+                showToast('Gagal terhubung ke server. Cek koneksi Anda.');
+                console.error(err);
+            } finally {
+                isSubmitting = false;
+                btn.disabled = false;
+                btn.innerHTML = originalBtnHTML;
+            }
+        }
+
+        /* ---------------- Toast ---------------- */
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').innerText = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3500);
+        }
+
+        /* ---------------- Init ---------------- */
+        window.onload = function() {
+            setCategory('per-studio');
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('booking-tgl').value = today;
+            togglePaymentField();
+        };
+    </script>
+</body>
+</html>
