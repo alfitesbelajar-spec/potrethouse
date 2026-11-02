@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PotretHouse — Admin</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%232b2523'/%3E%3Ctext x='50' y='68' font-size='60' text-anchor='middle' fill='white' font-family='serif'%3EP%3C/text%3E%3C/svg%3E">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:#fcfbfa;color:#2b2523;min-height:100vh;display:flex;flex-direction:column;line-height:1.5;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{margin:0;line-height:1.2}
+p{margin:0}
+button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font:inherit}
+a{color:inherit;text-decoration:none}
+.icon{width:1em;height:1em;display:inline-block;vertical-align:-0.125em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.wrap{max-width:1280px;margin:0 auto;padding:0 1rem;width:100%}
+@media(min-width:640px){.wrap{padding:0 1.5rem}}
+@media(min-width:1024px){.wrap{padding:0 2rem}}
+
+/* Header */
+.header{background:rgba(255,255,255,0.85);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid #e5dcda;position:sticky;top:0;z-index:30}
+.header-inner{height:64px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+@media(min-width:640px){.header-inner{height:80px}}
+.logo{display:flex;align-items:center;gap:10px;min-width:0}
+.logo-mark{width:36px;height:36px;border-radius:50%;background:#2b2523;color:#fff;display:flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-size:18px;flex-shrink:0}
+@media(min-width:640px){.logo-mark{width:40px;height:40px;font-size:20px}}
+.logo h1{font-family:Georgia,'Times New Roman',serif;font-size:18px;font-weight:700}
+@media(min-width:640px){.logo h1{font-size:22px}}
+.logo p{font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.1em}
+.header-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+@media(min-width:640px){.header-actions{gap:8px}}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 16px;border-radius:12px;font-weight:600;font-size:14px;border:1px solid transparent;transition:all .15s;cursor:pointer;text-decoration:none;line-height:1.2}
+.btn-primary{background:#2b2523;color:#fff}
+.btn-primary:hover{background:#4a423e}
+.btn-primary:disabled{opacity:.6;cursor:not-allowed}
+.btn-outline{background:#fff;color:#2b2523;border-color:#e5dcda}
+.btn-outline:hover{background:#f4f0ec}
+.btn-danger{background:#ef4444;color:#fff}
+.btn-danger:hover{background:#dc2626}
+.btn-danger:disabled{opacity:.6;cursor:not-allowed}
+.btn-sm{padding:8px 12px;font-size:13px}
+.btn-block{width:100%}
+.icon-btn{width:36px;height:36px;border-radius:50%;border:1px solid #e5dcda;color:#6b7280;display:inline-flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.icon-btn:hover{color:#2b2523;border-color:#2b2523}
+.icon-btn.danger{border-color:#fecaca;color:#dc2626}
+.icon-btn.danger:hover{background:#fef2f2}
+
+main{flex:1;padding:1.25rem 0}
+@media(min-width:640px){main{padding:2rem 0}}
+
+/* Page heading */
+.page-head{display:flex;flex-direction:column;gap:12px;margin-bottom:1.25rem}
+@media(min-width:768px){.page-head{flex-direction:row;align-items:center;justify-content:space-between}}
+.page-head h2{font-family:Georgia,serif;font-size:22px;font-weight:700}
+@media(min-width:640px){.page-head h2{font-size:28px}}
+.page-head p{color:#6b7280;font-size:13px;margin-top:4px}
+.actions{display:flex;flex-direction:column;gap:8px}
+@media(min-width:640px){.actions{flex-direction:row}}
+
+/* Stat cards */
+.stats{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:1.25rem}
+@media(min-width:640px){.stats{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:1024px){.stats{grid-template-columns:repeat(4,1fr)}}
+.stat{background:#fff;border:1px solid #e5dcda;border-radius:16px;padding:1rem}
+@media(min-width:640px){.stat{padding:1.5rem}}
+.stat-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#6b7280;font-weight:600}
+@media(min-width:640px){.stat-label{font-size:11px}}
+.stat-value{font-family:Georgia,serif;font-size:20px;font-weight:700;color:#2b2523;margin-top:8px;word-break:break-word}
+@media(min-width:640px){.stat-value{font-size:24px}}
+.stat-sub{font-size:11px;color:#6b7280;margin-top:6px}
+.stat-sub.green{color:#10b981}
+.stat-sub.amber{color:#d97706}
+
+/* Filters bar */
+.toolbar{background:#fff;border:1px solid #e5dcda;border-radius:16px 16px 0 0;border-bottom:none;padding:1rem;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(min-width:768px){.toolbar{display:flex;flex-wrap:wrap;align-items:center}}
+.toolbar input,.toolbar select{background:#fcfbfa;border:1px solid #e5dcda;border-radius:10px;padding:8px 12px;font-size:13px;color:#2b2523;outline:none;width:100%}
+.toolbar input:focus,.toolbar select:focus{border-color:#2b2523}
+.toolbar .span-2{grid-column:span 2}
+@media(min-width:768px){.toolbar input[type="text"]{width:200px}.toolbar input[type="month"]{width:auto}.toolbar select{width:auto}.toolbar .span-2{grid-column:auto}}
+
+/* Table container */
+.table-wrap{background:#fff;border:1px solid #e5dcda;border-radius:0 0 16px 16px;overflow:hidden}
+.table-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;text-align:left;font-size:13px}
+thead tr{background:#f4f0ec;border-bottom:1px solid #e5dcda;font-size:11px;font-weight:700;text-transform:uppercase;color:#2b2523}
+th,td{padding:12px;white-space:nowrap}
+th{text-align:left}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+td.center{text-align:center}
+tr.data-row{border-bottom:1px solid #f4f0ec;transition:background .15s}
+tr.data-row:hover{background:#fcfbfa}
+tr.data-row:last-child{border-bottom:none}
+
+/* Table mobile cards */
+.cards{display:block}
+@media(min-width:768px){.cards{display:none}}
+.table-scroll{display:none}
+@media(min-width:768px){.table-scroll{display:block}}
+.card-item{padding:14px;border-bottom:1px solid #f4f0ec}
+.card-item:last-child{border-bottom:none}
+.card-top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;margin-bottom:8px}
+.card-name{font-weight:700;color:#2b2523;font-size:14px}
+.card-code{font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:10px;color:#9ca3af;margin-top:2px}
+.card-meta{font-size:12px;color:#4b5563;line-height:1.6;margin-bottom:8px}
+.card-meta div{display:flex;align-items:center;gap:6px}
+.card-meta .icon{color:#9ca3af;flex-shrink:0}
+.card-money{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:8px 0;border-top:1px solid #f4f0ec;font-size:11px}
+.card-money .m-label{color:#6b7280}
+.card-money .m-val{font-weight:700;color:#2b2523;margin-top:2px;word-break:break-word}
+.card-money .m-val.amber{color:#d97706}
+.card-actions{display:flex;gap:6px;padding-top:8px}
+.card-actions button{flex:1;padding:8px;font-size:11px;font-weight:600;border-radius:8px;background:#f4f0ec;color:#2b2523;display:inline-flex;align-items:center;justify-content:center;gap:4px}
+.card-actions button:hover{background:#e5dcda}
+.card-actions button.ok{background:#d1fae5;color:#065f46}
+.card-actions button.ok:hover{background:#a7f3d0}
+.card-actions button.del{background:#fee2e2;color:#991b1b;flex:0 0 auto;padding:8px 12px}
+.card-actions button.del:hover{background:#fecaca}
+
+/* Badges */
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;white-space:nowrap}
+.badge-lunas{background:#d1fae5;color:#065f46}
+.badge-dp{background:#fef3c7;color:#92400e}
+.badge-belum{background:#dbeafe;color:#1e40af}
+.badge-metode{background:#f4f0ec;color:#4a423e;font-size:10px;padding:2px 8px;border-radius:4px;text-transform:uppercase;font-weight:600}
+
+/* Pagination */
+.pagination{padding:12px 16px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid #f4f0ec;background:#fff}
+@media(min-width:640px){.pagination{flex-direction:row}}
+.page-info{font-size:11px;color:#6b7280}
+.page-controls{display:flex;align-items:center;gap:8px}
+.page-controls button{padding:6px 12px;font-size:12px;font-weight:600;background:#fff;border:1px solid #e5dcda;border-radius:8px}
+.page-controls button:disabled{opacity:.4;cursor:not-allowed}
+.page-controls span{font-size:12px;font-weight:600;color:#2b2523;white-space:nowrap}
+
+/* Login */
+.login-gate{position:fixed;inset:0;z-index:60;background:#fcfbfa;display:flex;align-items:center;justify-content:center;padding:1rem}
+.login-card{background:#fff;border:1px solid #e5dcda;border-radius:20px;box-shadow:0 8px 24px rgba(0,0,0,.06);padding:2rem;max-width:380px;width:100%;text-align:center;display:flex;flex-direction:column;gap:16px}
+.login-mark{width:56px;height:56px;border-radius:50%;background:#2b2523;color:#fff;display:flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-size:24px;margin:0 auto}
+.login-card h2{font-family:Georgia,serif;font-size:20px}
+.login-card p{font-size:12px;color:#6b7280}
+.login-card input{background:#fcfbfa;border:1px solid #e5dcda;border-radius:12px;padding:12px 14px;font-size:14px;text-align:center;outline:none;width:100%}
+.login-card input:focus{border-color:#2b2523}
+.login-err{font-size:12px;color:#ef4444}
+
+/* Modal */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);z-index:50;display:none;align-items:flex-end;justify-content:center;padding:0}
+@media(min-width:640px){.modal{align-items:center;padding:1rem}}
+.modal.open{display:flex}
+.modal-panel{background:#fff;border-radius:20px 20px 0 0;max-width:560px;width:100%;padding:1.25rem;max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+@media(min-width:640px){.modal-panel{border-radius:24px;padding:2rem;max-height:90vh}}
+.modal-head{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f4f0ec;padding-bottom:12px;margin-bottom:14px}
+.modal-head h3{font-family:Georgia,serif;font-size:18px;font-weight:700}
+@media(min-width:640px){.modal-head h3{font-size:20px}}
+.modal-close{width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#9ca3af}
+.modal-close:hover{background:#f4f0ec;color:#2b2523}
+.modal-foot{display:flex;gap:8px;padding-top:12px;border-top:1px solid #f4f0ec;margin-top:14px}
+.modal-foot button{flex:1}
+
+/* Form fields */
+.field{margin-bottom:12px}
+.field-row{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:480px){.field-row{grid-template-columns:1fr 1fr}}
+.label{display:block;font-size:11px;font-weight:700;color:#4b5563;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.input,.select,.textarea{width:100%;background:#fcfbfa;border:1px solid #e5dcda;border-radius:12px;padding:10px 14px;font-size:14px;color:#2b2523;outline:none;transition:border-color .15s}
+.input:focus,.select:focus,.textarea:focus{border-color:#2b2523;box-shadow:0 0 0 3px rgba(43,37,35,.08)}
+.textarea{resize:vertical;min-height:60px}
+
+/* Detail rows */
+.detail-row{display:flex;justify-content:space-between;gap:12px;font-size:13px;padding:3px 0}
+.detail-row .k{color:#6b7280;flex-shrink:0}
+.detail-row .v{font-weight:600;text-align:right;word-break:break-word}
+.detail-section{border-top:1px solid #f4f0ec;padding-top:10px;margin-top:10px}
+
+/* Toast */
+.toast{position:fixed;bottom:16px;right:16px;background:#2b2523;color:#fff;padding:12px 18px;border-radius:14px;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.25);display:flex;align-items:center;gap:10px;transform:translateY(80px);opacity:0;transition:all .3s;z-index:70;max-width:calc(100vw - 32px)}
+@media(min-width:640px){.toast{bottom:24px;right:24px;max-width:340px}}
+.toast.show{transform:translateY(0);opacity:1}
+.toast .icon{flex-shrink:0;font-size:18px;color:#10b981}
+.toast.error .icon{color:#ef4444}
+
+.hidden{display:none !important}
+</style>
+</head>
+<body>
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-camera" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+<symbol id="i-rotate" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></symbol>
+<symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></symbol>
+<symbol id="i-eye" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-pen" viewBox="0 0 24 24"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></symbol>
+<symbol id="i-warn" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+<symbol id="i-wa" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></symbol>
+</svg>
+
+<header class="header">
+<div class="wrap header-inner">
+<div class="logo">
+<div class="logo-mark">P</div>
+<div>
+<h1>PotretHouse</h1>
+<p>Admin Hub</p>
+</div>
+</div>
+<div class="header-actions">
+<button onclick="loadData()" class="icon-btn" title="Muat ulang">
+<svg class="icon" style="font-size:14px"><use href="#i-rotate"/></svg>
+</button>
+<a href="index.html" class="icon-btn" title="Halaman Booking">
+<svg class="icon" style="font-size:14px"><use href="#i-camera"/></svg>
+</a>
+<button onclick="logout()" id="btn-logout" class="icon-btn danger hidden" title="Logout">
+<svg class="icon" style="font-size:14px"><use href="#i-logout"/></svg>
+</button>
+</div>
+</div>
+</header>
+
+<main class="wrap">
+
+<div id="dashboard" class="hidden">
+<div class="page-head">
+<div>
+<h2>Dashboard Keuangan</h2>
+<p>Kelola transaksi, pelunasan, dan rekap bulanan.</p>
+</div>
+<div class="actions">
+<button onclick="openAddModal()" class="btn btn-primary">
+<svg class="icon"><use href="#i-plus"/></svg>
+<span>Tambah Manual</span>
+</button>
+<button onclick="exportCSV()" class="btn btn-outline">
+<svg class="icon"><use href="#i-download"/></svg>
+<span>Export CSV</span>
+</button>
+</div>
+</div>
+
+<div class="stats">
+<div class="stat">
+<div class="stat-label">Pendapatan <span id="stat-month">Bulan Ini</span></div>
+<div class="stat-value" id="stat-revenue">Rp 0</div>
+<div class="stat-sub green"><svg class="icon"><use href="#i-check"/></svg> DP + Pelunasan</div>
+</div>
+<div class="stat">
+<div class="stat-label">Total Klien</div>
+<div class="stat-value" id="stat-clients">0</div>
+<div class="stat-sub">Semua transaksi</div>
+</div>
+<div class="stat">
+<div class="stat-label">Sisa Piutang</div>
+<div class="stat-value" id="stat-debt" style="color:#d97706">Rp 0</div>
+<div class="stat-sub amber">Belum dilunasi</div>
+</div>
+<div class="stat">
+<div class="stat-label">Komersil / Non</div>
+<div class="stat-value" id="stat-comparison">0 / 0</div>
+<div class="stat-sub">Perbandingan sesi</div>
+</div>
+</div>
+
+<div class="toolbar">
+<input type="text" id="flt-search" placeholder="Cari nama / kode..." oninput="state.page=1;render()">
+<input type="month" id="flt-month" onchange="state.page=1;render()">
+<select id="flt-status" onchange="state.page=1;render()">
+<option value="">Semua Status</option>
+<option value="lunas">Lunas</option>
+<option value="dp">DP Saja</option>
+<option value="belum">Belum Bayar</option>
+</select>
+<select id="flt-cat" onchange="state.page=1;render()">
+<option value="">Semua Kategori</option>
+<option value="kom">Komersil</option>
+<option value="non">Non-Komersil</option>
+</select>
+<button onclick="clearFilters()" class="btn btn-outline btn-sm span-2">Reset Filter</button>
+</div>
+
+<div class="table-wrap">
+<div class="table-scroll">
+<table>
+<thead>
+<tr>
+<th>Kode</th>
+<th>Klien</th>
+<th>Jadwal</th>
+<th>Paket</th>
+<th class="num">Total</th>
+<th class="num">Dibayar</th>
+<th class="num">Sisa</th>
+<th class="center">Status</th>
+<th class="center">Aksi</th>
+</tr>
+</thead>
+<tbody id="table-body"></tbody>
+</table>
+</div>
+<div id="cards" class="cards"></div>
+<div class="pagination">
+<div class="page-info" id="page-info">-</div>
+<div class="page-controls">
+<button onclick="changePage(-1)" id="btn-prev">Prev</button>
+<span id="page-indicator">1 / 1</span>
+<button onclick="changePage(1)" id="btn-next">Next</button>
+</div>
+</div>
+</div>
+</div>
+
+</main>
+
+<div id="login-gate" class="login-gate">
+<div class="login-card">
+<div class="login-mark">P</div>
+<div>
+<h2>Area Admin</h2>
+<p style="margin-top:4px">Masukkan kata sandi untuk melanjutkan</p>
+</div>
+<input type="password" id="login-pw" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter'){event.preventDefault();doLogin();}">
+<button onclick="doLogin()" id="btn-login" class="btn btn-primary btn-block">Masuk</button>
+<p id="login-err" class="login-err hidden">Kata sandi salah.</p>
+<a href="index.html" style="font-size:11px;color:#9ca3af">← Kembali ke halaman booking</a>
+</div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div id="m-edit" class="modal">
+<div class="modal-panel">
+<div class="modal-head">
+<h3 id="edit-title">Tambah Transaksi</h3>
+<button onclick="closeModal('m-edit')" class="modal-close"><svg class="icon" style="font-size:18px"><use href="#i-x"/></svg></button>
+</div>
+<form onsubmit="saveTransaction(event)" id="edit-form">
+<input type="hidden" id="e-id" value="-1">
+<div class="field-row">
+<div class="field">
+<label class="label">Nama *</label>
+<input type="text" id="e-nama" class="input" required>
+</div>
+<div class="field">
+<label class="label">No. WA</label>
+<input type="tel" id="e-nohp" class="input">
+</div>
+</div>
+<div class="field">
+<label class="label">Email</label>
+<input type="email" id="e-email" class="input">
+</div>
+<div class="field-row">
+<div class="field">
+<label class="label">Tgl Sesi</label>
+<input type="date" id="e-tglsesi" class="input">
+</div>
+<div class="field">
+<label class="label">Jam</label>
+<input type="time" id="e-jamsesi" class="input">
+</div>
+</div>
+<div class="field">
+<label class="label">Paket</label>
+<input type="text" id="e-paket" class="input" placeholder="cth: All Akses - 2 Jam">
+</div>
+<div class="field">
+<label class="label">Catatan</label>
+<textarea id="e-catatan" class="textarea" rows="2"></textarea>
+</div>
+<div class="field-row">
+<div class="field">
+<label class="label">Tgl DP</label>
+<input type="date" id="e-tgldp" class="input">
+</div>
+<div class="field">
+<label class="label">Nominal DP</label>
+<input type="number" id="e-nomdp" class="input" min="0" value="0">
+</div>
+</div>
+<div class="field-row">
+<div class="field">
+<label class="label">Tgl Lunas</label>
+<input type="date" id="e-tgllunas" class="input">
+</div>
+<div class="field">
+<label class="label">Nominal Lunas</label>
+<input type="number" id="e-nomlunas" class="input" min="0" value="0">
+</div>
+</div>
+<div class="field-row">
+<div class="field">
+<label class="label">Metode</label>
+<select id="e-metode" class="select">
+<option value="transfer">Transfer</option>
+<option value="cash">Cash</option>
+</select>
+</div>
+<div class="field">
+<label class="label">Kategori</label>
+<select id="e-kategori" class="select">
+<option value="non">Non-Komersil</option>
+<option value="kom">Komersil</option>
+</select>
+</div>
+</div>
+<div class="field-row">
+<div class="field">
+<label class="label">Extra Orang</label>
+<input type="number" id="e-extraorang" class="input" min="0" value="0">
+</div>
+<div class="field">
+<label class="label">Extra Edit</label>
+<input type="number" id="e-extraedit" class="input" min="0" value="0">
+</div>
+</div>
+<div class="field">
+<label class="label">Total Nilai Transaksi *</label>
+<input type="number" id="e-total" class="input" min="0" required value="0" style="font-weight:700">
+</div>
+<div class="modal-foot">
+<button type="button" onclick="closeModal('m-edit')" class="btn btn-outline">Batal</button>
+<button type="submit" id="btn-save" class="btn btn-primary">Simpan</button>
+</div>
+</form>
+</div>
+</div>
+
+<!-- Detail Modal -->
+<div id="m-detail" class="modal">
+<div class="modal-panel">
+<div class="modal-head">
+<h3>Detail Transaksi</h3>
+<button onclick="closeModal('m-detail')" class="modal-close"><svg class="icon" style="font-size:18px"><use href="#i-x"/></svg></button>
+</div>
+<div id="detail-body"></div>
+<div class="modal-foot">
+<button onclick="closeModal('m-detail')" class="btn btn-outline">Tutup</button>
+<button onclick="sendWA()" id="btn-wa-reminder" class="btn btn-primary" style="background:#10b981"><svg class="icon"><use href="#i-wa"/></svg> Reminder WA</button>
+</div>
+</div>
+</div>
+
+<!-- Delete Modal -->
+<div id="m-delete" class="modal">
+<div class="modal-panel" style="max-width:400px">
+<div class="modal-head">
+<h3>Hapus Transaksi?</h3>
+<button onclick="closeModal('m-delete')" class="modal-close"><svg class="icon" style="font-size:18px"><use href="#i-x"/></svg></button>
+</div>
+<div style="text-align:center;padding:8px 0 16px">
+<div style="width:56px;height:56px;border-radius:50%;background:#fee2e2;color:#dc2626;display:flex;align-items:center;justify-content:center;margin:0 auto 12px"><svg class="icon" style="font-size:24px"><use href="#i-warn"/></svg></div>
+<p id="delete-info" style="font-size:13px;color:#4b5563"></p>
+</div>
+<div class="modal-foot">
+<button onclick="closeModal('m-delete')" class="btn btn-outline">Batal</button>
+<button onclick="confirmDelete()" id="btn-del" class="btn btn-danger">Hapus</button>
+</div>
+</div>
+</div>
+
+<div id="toast" class="toast"><svg class="icon"><use href="#i-check"/></svg><span id="toast-msg">Berhasil!</span></div>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbzI8qOcN59e-wqgIzuY3L-6fRJEd9EFoHetjhyam58yWWRmdddJCd6X7fcMP0y6-y5i/exec';
+const SESSION_KEY = 'ph_admin_token';
+
+const state={transactions:[],filtered:[],page:1,perPage:10,detail:null,delId:null};
+
+async function apiGet(p){const q=new URLSearchParams(p).toString();const r=await fetch(`${API_URL}?${q}`);return r.json();}
+async function apiPost(p){const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(p)});return r.json();}
+function getToken(){return sessionStorage.getItem(SESSION_KEY)||'';}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function fmtRp(n){return 'Rp '+(Number(n)||0).toLocaleString('id-ID');}
+function masuk(tx){return (Number(tx.nomDp)||0)+(Number(tx.nomLunas)||0);}
+function sisa(tx){return Math.max(0,(Number(tx.total)||0)-masuk(tx));}
+function statusOf(tx){const m=masuk(tx),t=Number(tx.total)||0;if(m>0&&m>=t)return{label:'Lunas',cls:'badge-lunas',key:'lunas'};if(m>0)return{label:'DP Saja',cls:'badge-dp',key:'dp'};return{label:'Belum Bayar',cls:'badge-belum',key:'belum'};}
+
+async function doLogin(){
+  const pw=document.getElementById('login-pw').value;
+  if(!pw)return;
+  const btn=document.getElementById('btn-login');
+  const orig=btn.textContent;btn.disabled=true;btn.textContent='Memuat...';
+  try{
+    const r=await apiPost({action:'login',password:pw});
+    if(r.status==='success'){sessionStorage.setItem(SESSION_KEY,r.data.token);hideGate();}
+    else{document.getElementById('login-err').textContent=r.message||'Password salah.';document.getElementById('login-err').classList.remove('hidden');}
+  }catch(e){document.getElementById('login-err').textContent='Gagal terhubung ke server.';document.getElementById('login-err').classList.remove('hidden');}
+  finally{btn.disabled=false;btn.textContent=orig;}
+}
+
+function hideGate(){
+  document.getElementById('login-gate').classList.add('hidden');
+  document.getElementById('dashboard').classList.remove('hidden');
+  document.getElementById('btn-logout').classList.remove('hidden');
+  loadData();
+}
+
+async function logout(){
+  const tok=getToken();
+  sessionStorage.removeItem(SESSION_KEY);
+  if(tok)apiPost({action:'logout',token:tok}).catch(()=>{});
+  location.reload();
+}
+
+async function loadData(){
+  const tb=document.getElementById('table-body');
+  tb.innerHTML='<tr><td colspan="9" style="text-align:center;padding:24px;color:#9ca3af">Memuat data...</td></tr>';
+  document.getElementById('cards').innerHTML='<div style="padding:24px;text-align:center;color:#9ca3af">Memuat data...</div>';
+  try{
+    const r=await apiGet({action:'list',token:getToken()});
+    if(r.status==='success'){state.transactions=r.data||[];renderStats();render();}
+    else if((r.message||'').toLowerCase().includes('unauth')){logout();}
+    else showToast('Gagal: '+(r.message||'error'),'error');
+  }catch(e){console.error(e);showToast('Gagal terhubung ke server.','error');}
+}
+
+function renderStats(){
+  const now=new Date();
+  const curMonth=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  let revenue=0,debt=0,kom=0,non=0;
+  state.transactions.forEach(tx=>{
+    const dpM=String(tx.tglDp||'').slice(0,7);
+    const lunasM=String(tx.tglLunas||'').slice(0,7);
+    if(dpM===curMonth)revenue+=Number(tx.nomDp)||0;
+    if(lunasM===curMonth)revenue+=Number(tx.nomLunas)||0;
+    debt+=sisa(tx);
+    if(tx.kategori==='kom')kom++;else non++;
+  });
+  document.getElementById('stat-revenue').textContent=fmtRp(revenue);
+  document.getElementById('stat-clients').textContent=state.transactions.length+' Klien';
+  document.getElementById('stat-debt').textContent=fmtRp(debt);
+  document.getElementById('stat-comparison').textContent=`${kom} / ${non}`;
+  document.getElementById('stat-month').textContent=now.toLocaleDateString('id-ID',{month:'long',year:'numeric'});
+}
+
+function applyFilters(){
+  const q=document.getElementById('flt-search').value.toLowerCase();
+  const month=document.getElementById('flt-month').value;
+  const status=document.getElementById('flt-status').value;
+  const cat=document.getElementById('flt-cat').value;
+  let list=state.transactions.filter(tx=>{
+    if(q&&!((tx.nama||'').toLowerCase().includes(q)||(tx.kodeBooking||'').toLowerCase().includes(q)))return false;
+    if(month){
+      const dpM=String(tx.tglDp||'').slice(0,7);
+      const lunasM=String(tx.tglLunas||'').slice(0,7);
+      const sesiM=String(tx.tglSesi||'').slice(0,7);
+      if(dpM!==month&&lunasM!==month&&sesiM!==month)return false;
+    }
+    if(status&&statusOf(tx).key!==status)return false;
+    if(cat&&tx.kategori!==cat)return false;
+    return true;
+  });
+  state.filtered=list;return list;
+}
+
+function render(){
+  const list=applyFilters();
+  const totalPage=Math.max(1,Math.ceil(list.length/state.perPage));
+  if(state.page>totalPage)state.page=totalPage;
+  const start=(state.page-1)*state.perPage;
+  const pageData=list.slice(start,start+state.perPage);
+  const tb=document.getElementById('table-body');
+  const cards=document.getElementById('cards');
+
+  if(pageData.length===0){
+    tb.innerHTML='<tr><td colspan="9" style="text-align:center;padding:24px;color:#9ca3af">Tidak ada transaksi.</td></tr>';
+    cards.innerHTML='<div style="padding:24px;text-align:center;color:#9ca3af">Tidak ada transaksi.</div>';
+  }else{
+    tb.innerHTML=pageData.map(tx=>{
+      const s=statusOf(tx);
+      const masukVal=masuk(tx),sisaVal=sisa(tx);
+      return `<tr class="data-row">
+        <td style="font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:11px;color:#4b5563">${esc(tx.kodeBooking||'-')}</td>
+        <td><div style="font-weight:700">${esc(tx.nama||'-')}</div><div style="font-size:11px;color:#9ca3af">${esc(tx.noHp||'')}</div></td>
+        <td style="font-size:11px"><div style="font-weight:600">${esc(tx.tglSesi||'-')}</div><div style="color:#9ca3af">${esc(tx.jamSesi||'')}</div></td>
+        <td style="font-size:11px;color:#4b5563;max-width:180px;white-space:normal">${esc(tx.paket||'-')}</td>
+        <td class="num" style="font-weight:700">${fmtRp(tx.total)}</td>
+        <td class="num">${fmtRp(masukVal)}</td>
+        <td class="num" style="${sisaVal>0?'color:#d97706;font-weight:600':'color:#9ca3af'}">${fmtRp(sisaVal)}</td>
+        <td class="center"><span class="badge ${s.cls}">${s.label}</span></td>
+        <td class="center">
+          <div style="display:inline-flex;gap:4px">
+            <button onclick="openDetail(${tx.id})" class="icon-btn" style="width:28px;height:28px" title="Detail"><svg class="icon" style="font-size:12px"><use href="#i-eye"/></svg></button>
+            <button onclick="openEdit(${tx.id})" class="icon-btn" style="width:28px;height:28px" title="Edit"><svg class="icon" style="font-size:12px"><use href="#i-pen"/></svg></button>
+            ${s.key!=='lunas'?`<button onclick="markLunas(${tx.id})" class="icon-btn" style="width:28px;height:28px;background:#d1fae5;color:#065f46;border-color:#a7f3d0" title="Tandai Lunas"><svg class="icon" style="font-size:12px"><use href="#i-check"/></svg></button>`:''}
+            <button onclick="openDelete(${tx.id})" class="icon-btn danger" style="width:28px;height:28px" title="Hapus"><svg class="icon" style="font-size:12px"><use href="#i-trash"/></svg></button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+
+    cards.innerHTML=pageData.map(tx=>{
+      const s=statusOf(tx);
+      const masukVal=masuk(tx),sisaVal=sisa(tx);
+      return `<div class="card-item">
+        <div class="card-top">
+          <div style="min-width:0;flex:1">
+            <div class="card-name">${esc(tx.nama||'-')}</div>
+            <div class="card-code">${esc(tx.kodeBooking||'-')}</div>
+          </div>
+          <span class="badge ${s.cls}">${s.label}</span>
+        </div>
+        <div class="card-meta">
+          <div><svg class="icon"><use href="#i-clock"/></svg>${esc(tx.tglSesi||'-')} · ${esc(tx.jamSesi||'-')}</div>
+          <div style="margin-top:2px"><svg class="icon"><use href="#i-camera"/></svg><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(tx.paket||'-')}</span></div>
+        </div>
+        <div class="card-money">
+          <div><div class="m-label">Total</div><div class="m-val">${fmtRp(tx.total)}</div></div>
+          <div><div class="m-label">Dibayar</div><div class="m-val">${fmtRp(masukVal)}</div></div>
+          <div><div class="m-label">Sisa</div><div class="m-val ${sisaVal>0?'amber':''}">${fmtRp(sisaVal)}</div></div>
+        </div>
+        <div class="card-actions">
+          <button onclick="openDetail(${tx.id})"><svg class="icon"><use href="#i-eye"/></svg>Detail</button>
+          <button onclick="openEdit(${tx.id})"><svg class="icon"><use href="#i-pen"/></svg>Edit</button>
+          ${s.key!=='lunas'?`<button class="ok" onclick="markLunas(${tx.id})"><svg class="icon"><use href="#i-check"/></svg></button>`:''}
+          <button class="del" onclick="openDelete(${tx.id})"><svg class="icon"><use href="#i-trash"/></svg></button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  document.getElementById('page-info').textContent=list.length===0?'0 data':`${start+1}-${Math.min(start+state.perPage,list.length)} dari ${list.length}`;
+  document.getElementById('page-indicator').textContent=`${state.page} / ${totalPage}`;
+  document.getElementById('btn-prev').disabled=state.page<=1;
+  document.getElementById('btn-next').disabled=state.page>=totalPage;
+}
+
+function changePage(d){state.page+=d;render();}
+function clearFilters(){document.getElementById('flt-search').value='';document.getElementById('flt-month').value='';document.getElementById('flt-status').value='';document.getElementById('flt-cat').value='';state.page=1;render();}
+
+function openDetail(id){
+  const tx=state.transactions.find(t=>Number(t.id)===Number(id));
+  if(!tx)return;
+  state.detail=tx;
+  const m=masuk(tx),s=sisa(tx),st=statusOf(tx);
+  document.getElementById('detail-body').innerHTML=`
+    <div class="detail-row"><span class="k">Kode</span><span class="v" style="font-family:ui-monospace,Menlo,Monaco,Consolas,monospace">${esc(tx.kodeBooking||'-')}</span></div>
+    <div class="detail-row"><span class="k">Nama</span><span class="v">${esc(tx.nama||'-')}</span></div>
+    <div class="detail-row"><span class="k">No. WA</span><span class="v">${esc(tx.noHp||'-')}</span></div>
+    <div class="detail-row"><span class="k">Email</span><span class="v">${esc(tx.email||'-')}</span></div>
+    <div class="detail-row"><span class="k">Jadwal</span><span class="v">${esc(tx.tglSesi||'-')} ${esc(tx.jamSesi||'')}</span></div>
+    <div class="detail-row"><span class="k">Paket</span><span class="v">${esc(tx.paket||'-')}</span></div>
+    <div class="detail-row"><span class="k">Kategori</span><span class="v">${tx.kategori==='kom'?'Komersil':'Non-Komersil'}</span></div>
+    <div class="detail-row"><span class="k">Extra Org/Edit</span><span class="v">${tx.extraOrang||0} / ${tx.extraEdit||0}</span></div>
+    ${tx.catatan?`<div class="detail-row" style="align-items:flex-start"><span class="k">Catatan</span><span class="v" style="font-weight:400;background:#fcfbfa;padding:6px 10px;border-radius:8px;margin-top:2px;max-width:70%">${esc(tx.catatan)}</span></div>`:''}
+    <div class="detail-section">
+      <div class="detail-row"><span class="k">Total</span><span class="v">${fmtRp(tx.total)}</span></div>
+      <div class="detail-row"><span class="k">DP (${esc(tx.tglDp||'-')})</span><span class="v">${fmtRp(tx.nomDp)}</span></div>
+      <div class="detail-row"><span class="k">Lunas (${esc(tx.tglLunas||'-')})</span><span class="v">${fmtRp(tx.nomLunas)}</span></div>
+      <div class="detail-row"><span class="k">Dibayar</span><span class="v">${fmtRp(m)}</span></div>
+      <div class="detail-row"><span class="k">Sisa</span><span class="v" style="color:${s>0?'#d97706':'#059669'}">${fmtRp(s)}</span></div>
+      <div class="detail-row"><span class="k">Status</span><span class="v"><span class="badge ${st.cls}">${st.label}</span></span></div>
+    </div>
+  `;
+  document.getElementById('m-detail').classList.add('open');
+}
+
+function openAddModal(){
+  document.getElementById('edit-title').textContent='Tambah Transaksi';
+  document.getElementById('e-id').value='-1';
+  ['nama','nohp','email','tglsesi','jamsesi','paket','catatan','tgldp','tgllunas'].forEach(f=>document.getElementById('e-'+f).value='');
+  ['nomdp','nomlunas','total','extraorang','extraedit'].forEach(f=>document.getElementById('e-'+f).value='0');
+  document.getElementById('e-metode').value='transfer';
+  document.getElementById('e-kategori').value='non';
+  document.getElementById('m-edit').classList.add('open');
+}
+
+function openEdit(id){
+  const tx=state.transactions.find(t=>Number(t.id)===Number(id));
+  if(!tx)return;
+  document.getElementById('edit-title').textContent=`Edit: ${tx.nama}`;
+  document.getElementById('e-id').value=tx.id;
+  document.getElementById('e-nama').value=tx.nama||'';
+  document.getElementById('e-nohp').value=tx.noHp||'';
+  document.getElementById('e-email').value=tx.email||'';
+  document.getElementById('e-tglsesi').value=tx.tglSesi||'';
+  document.getElementById('e-jamsesi').value=tx.jamSesi||'';
+  document.getElementById('e-paket').value=tx.paket||'';
+  document.getElementById('e-catatan').value=tx.catatan||'';
+  document.getElementById('e-tgldp').value=tx.tglDp||'';
+  document.getElementById('e-nomdp').value=tx.nomDp||0;
+  document.getElementById('e-tgllunas').value=tx.tglLunas||'';
+  document.getElementById('e-nomlunas').value=tx.nomLunas||0;
+  document.getElementById('e-metode').value=tx.metode||'transfer';
+  document.getElementById('e-kategori').value=tx.kategori||'non';
+  document.getElementById('e-extraorang').value=tx.extraOrang||0;
+  document.getElementById('e-extraedit').value=tx.extraEdit||0;
+  document.getElementById('e-total').value=tx.total||0;
+  document.getElementById('m-edit').classList.add('open');
+}
+
+async function saveTransaction(e){
+  e.preventDefault();
+  const id=parseInt(document.getElementById('e-id').value);
+  const data={
+    nama:document.getElementById('e-nama').value.trim(),
+    noHp:document.getElementById('e-nohp').value.trim(),
+    email:document.getElementById('e-email').value.trim(),
+    tglSesi:document.getElementById('e-tglsesi').value,
+    jamSesi:document.getElementById('e-jamsesi').value,
+    paket:document.getElementById('e-paket').value.trim(),
+    catatan:document.getElementById('e-catatan').value.trim(),
+    tglDp:document.getElementById('e-tgldp').value,
+    nomDp:parseInt(document.getElementById('e-nomdp').value)||0,
+    tglLunas:document.getElementById('e-tgllunas').value,
+    nomLunas:parseInt(document.getElementById('e-nomlunas').value)||0,
+    metode:document.getElementById('e-metode').value,
+    kategori:document.getElementById('e-kategori').value,
+    extraOrang:parseInt(document.getElementById('e-extraorang').value)||0,
+    extraEdit:parseInt(document.getElementById('e-extraedit').value)||0,
+    total:parseInt(document.getElementById('e-total').value)||0
+  };
+  if(!data.nama)return showToast('Nama wajib diisi.','error');
+  if(data.nomDp>data.total)return showToast('DP tidak boleh melebihi total.','error');
+  if(data.nomDp+data.nomLunas>data.total)return showToast('Total pembayaran melebihi nilai transaksi.','error');
+
+  const btn=document.getElementById('btn-save');
+  const orig=btn.textContent;btn.disabled=true;btn.textContent='Menyimpan...';
+  try{
+    let r;
+    if(id===-1)r=await apiPost({action:'create',data});
+    else{data.id=id;r=await apiPost({action:'update',data,token:getToken()});}
+    if(r.status==='success'){showToast(id===-1?'Transaksi ditambahkan!':'Transaksi diperbarui!');closeModal('m-edit');loadData();}
+    else showToast('Gagal: '+(r.message||'error'),'error');
+  }catch(e){showToast('Gagal terhubung ke server.','error');}
+  finally{btn.disabled=false;btn.textContent=orig;}
+}
+
+function openDelete(id){
+  const tx=state.transactions.find(t=>Number(t.id)===Number(id));
+  if(!tx)return;
+  state.delId=id;
+  document.getElementById('delete-info').innerHTML=`<strong>${esc(tx.kodeBooking||'-')}</strong><br>${esc(tx.nama)}`;
+  document.getElementById('m-delete').classList.add('open');
+}
+
+async function confirmDelete(){
+  const id=state.delId;
+  if(!id)return;
+  const btn=document.getElementById('btn-del');
+  btn.disabled=true;
+  try{
+    const r=await apiPost({action:'delete',id:id,token:getToken()});
+    if(r.status==='success'){showToast('Transaksi dihapus.');closeModal('m-delete');loadData();}
+    else showToast('Gagal: '+(r.message||'error'),'error');
+  }catch(e){showToast('Gagal terhubung ke server.','error');}
+  finally{btn.disabled=false;}
+}
+
+async function markLunas(id){
+  const tx=state.transactions.find(t=>Number(t.id)===Number(id));
+  if(!tx)return;
+  const s=sisa(tx);
+  if(s<=0)return;
+  if(!confirm(`Tandai lunas untuk ${tx.nama}? Menambahkan pelunasan ${fmtRp(s)} hari ini.`))return;
+  const today=new Date().toISOString().split('T')[0];
+  try{
+    const r=await apiPost({action:'update',data:{id:tx.id,tglLunas:today,nomLunas:(Number(tx.nomLunas)||0)+s},token:getToken()});
+    if(r.status==='success'){showToast('Ditandai lunas.');loadData();}
+    else showToast('Gagal: '+(r.message||'error'),'error');
+  }catch(e){showToast('Gagal terhubung ke server.','error');}
+}
+
+function sendWA(){
+  const tx=state.detail;
+  if(!tx||!tx.noHp)return showToast('Nomor WA tidak tersedia.','error');
+  let phone=String(tx.noHp).replace(/\D/g,'');
+  if(phone.startsWith('0'))phone='62'+phone.slice(1);
+  const txt=encodeURIComponent(`Halo ${tx.nama}, ini reminder dari PotretHouse Studio.\n\nKode: ${tx.kodeBooking}\nJadwal: ${tx.tglSesi} ${tx.jamSesi}\nPaket: ${tx.paket}\nSisa Pembayaran: ${fmtRp(sisa(tx))}\n\nMohon konfirmasi kehadiran. Terima kasih!`);
+  window.open(`https://wa.me/${phone}?text=${txt}`,'_blank');
+}
+
+function exportCSV(){
+  const list=applyFilters();
+  if(list.length===0)return showToast('Tidak ada data untuk di-export.','error');
+  const headers=['Kode Booking','Nama','No WA','Email','Tgl Sesi','Jam Sesi','Paket','Kategori','Extra Orang','Extra Edit','Tgl DP','Nom DP','Tgl Lunas','Nom Lunas','Metode','Total','Dibayar','Sisa','Status','Catatan'];
+  const rows=list.map(tx=>[tx.kodeBooking,tx.nama,tx.noHp,tx.email,tx.tglSesi,tx.jamSesi,tx.paket,tx.kategori==='kom'?'Komersil':'Non-Komersil',tx.extraOrang,tx.extraEdit,tx.tglDp,tx.nomDp,tx.tglLunas,tx.nomLunas,tx.metode,tx.total,masuk(tx),sisa(tx),statusOf(tx).label,tx.catatan||'']);
+  const csv=[headers,...rows].map(r=>r.map(c=>`"${String(c==null?'':c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`PotretHouse_${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('CSV diunduh.');
+}
+
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+function showToast(msg,type='success'){
+  const t=document.getElementById('toast');
+  document.getElementById('toast-msg').textContent=msg;
+  t.classList.toggle('error',type==='error');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  if(getToken())hideGate();
+});
+</script>
+</body>
+</html>
