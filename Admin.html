@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PotretHouse — Dashboard Admin</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%232b2523'/><text x='50' y='68' font-size='60' text-anchor='middle' fill='white' font-family='serif'>P</text></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        serif: ['"Playfair Display"', 'serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#fcfbfa', 100: '#f4f0ec', 200: '#e5dcda',
+                            300: '#d1c3be', 800: '#4a423e', 900: '#2b2523',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .font-serif { font-family: 'Playfair Display', serif; }
+        .skeleton { background: linear-gradient(90deg, #f4f0ec 0%, #e5dcda 50%, #f4f0ec 100%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 8px; height: 1em; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        th.sortable { cursor: pointer; user-select: none; }
+        th.sortable:hover { background-color: #ede4e0; }
+        @media print { body * { visibility: hidden; } #print-area, #print-area * { visibility: visible; } #print-area { position: absolute; left: 0; top: 0; width: 100%; } }
+        @media (max-width: 640px) { input, select, textarea, button { min-height: 44px; } }
+    </style>
+</head>
+<body class="bg-brand-50 text-brand-900 min-h-full flex flex-col antialiased">
+
+    <!-- Header -->
+    <header class="bg-white/80 backdrop-blur-md border-b border-brand-200 sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-2">
+            <div class="flex items-center space-x-2.5 sm:space-x-3 min-w-0">
+                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-brand-900 flex items-center justify-center text-white font-serif text-lg sm:text-xl shrink-0">P</div>
+                <div class="min-w-0">
+                    <h1 class="font-serif text-lg sm:text-2xl font-bold tracking-tight text-brand-900 leading-tight truncate">PotretHouse</h1>
+                    <p class="text-[10px] sm:text-xs text-gray-500 uppercase tracking-widest">Admin Hub</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-1.5 sm:space-x-3 shrink-0">
+                <label class="flex items-center space-x-1.5 text-xs bg-brand-100 border border-brand-200 px-2.5 py-2 rounded-full cursor-pointer" title="Auto-refresh setiap 60 detik">
+                    <input type="checkbox" id="auto-refresh-toggle" onchange="toggleAutoRefresh()" class="text-brand-900">
+                    <span class="font-semibold hidden sm:inline">Auto-refresh</span>
+                </label>
+                <button onclick="loadTransactions(true)" class="inline-flex items-center space-x-2 text-xs font-semibold bg-brand-100 text-brand-900 border border-brand-200 px-2.5 sm:px-3 py-2 rounded-full hover:bg-brand-200 transition" title="Muat ulang">
+                    <i class="fa-solid fa-rotate text-xs"></i><span class="hidden sm:inline">Muat Ulang</span>
+                </button>
+                <a href="Dashboard.html" class="w-9 h-9 rounded-full border border-brand-200 text-gray-400 hover:text-brand-900 hover:border-brand-900 flex items-center justify-center transition shrink-0" title="Halaman Booking"><i class="fa-solid fa-camera-retro text-xs"></i></a>
+                <button onclick="logout()" id="logout-btn" class="hidden w-9 h-9 rounded-full border border-red-200 text-red-500 hover:bg-red-50 flex items-center justify-center transition shrink-0" title="Logout"><i class="fa-solid fa-right-from-bracket text-xs"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-8">
+
+        <div id="dashboard-content" class="hidden space-y-5 sm:space-y-8">
+            <!-- Header & Actions -->
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4">
+                <div>
+                    <h2 class="font-serif text-2xl sm:text-3xl font-bold text-brand-900 leading-tight">Dashboard Keuangan</h2>
+                    <p class="text-gray-500 text-xs sm:text-sm mt-1">Kelola transaksi, pelunasan, dan rekap bulanan.</p>
+                </div>
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 md:shrink-0">
+                    <button onclick="openAddModal()" class="bg-brand-900 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-brand-800 transition shadow-sm flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-plus"></i><span>Tambah Manual</span>
+                    </button>
+                    <button onclick="exportCSV()" class="bg-white text-brand-900 border border-brand-200 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-brand-50 transition flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-file-csv"></i><span>Export CSV</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <div class="bg-white rounded-2xl p-4 sm:p-6 border border-brand-200 shadow-sm">
+                    <div class="text-[10px] sm:text-xs uppercase tracking-wider text-gray-500 font-semibold">Pendapatan <span id="stat-month-label">Bulan Ini</span></div>
+                    <div id="stat-total-pendapatan" class="text-xl sm:text-2xl font-bold text-brand-900 mt-2 font-serif break-words">Rp 0</div>
+                    <div class="text-[10px] sm:text-xs text-emerald-600 mt-2 flex items-center"><i class="fa-solid fa-arrow-trend-up mr-1"></i><span>Dari DP + Pelunasan</span></div>
+                </div>
+                <div class="bg-white rounded-2xl p-4 sm:p-6 border border-brand-200 shadow-sm">
+                    <div class="text-[10px] sm:text-xs uppercase tracking-wider text-gray-500 font-semibold">Total Klien</div>
+                    <div id="stat-total-klien" class="text-xl sm:text-2xl font-bold text-brand-900 mt-2 font-serif">0</div>
+                    <div class="text-[10px] sm:text-xs text-gray-500 mt-2">Semua transaksi</div>
+                </div>
+                <div class="bg-white rounded-2xl p-4 sm:p-6 border border-brand-200 shadow-sm">
+                    <div class="text-[10px] sm:text-xs uppercase tracking-wider text-gray-500 font-semibold">Sisa Piutang</div>
+                    <div id="stat-total-piutang" class="text-xl sm:text-2xl font-bold text-amber-600 mt-2 font-serif break-words">Rp 0</div>
+                    <div class="text-[10px] sm:text-xs text-amber-600 mt-2">Belum dilunasi</div>
+                </div>
+                <div class="bg-white rounded-2xl p-4 sm:p-6 border border-brand-200 shadow-sm">
+                    <div class="text-[10px] sm:text-xs uppercase tracking-wider text-gray-500 font-semibold">Komersil / Non</div>
+                    <div id="stat-perbandingan-komersil" class="text-xl sm:text-2xl font-bold text-brand-900 mt-2 font-serif">0 / 0</div>
+                    <div class="text-[10px] sm:text-xs text-gray-500 mt-2">Perbandingan sesi</div>
+                </div>
+            </div>
+
+            <!-- Upcoming -->
+            <div class="bg-white rounded-2xl border border-brand-200 shadow-sm p-4 sm:p-5">
+                <h3 class="font-serif text-base sm:text-lg font-bold text-brand-900 mb-3"><i class="fa-solid fa-calendar-day mr-2 text-brand-800"></i>Sesi Terdekat (7 Hari)</h3>
+                <div id="upcoming-sessions" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3"></div>
+            </div>
+
+            <!-- Transactions Box -->
+            <div class="bg-white rounded-2xl sm:rounded-3xl border border-brand-200 shadow-sm overflow-hidden">
+                <div class="p-4 sm:p-5 border-b border-brand-100 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-serif text-lg sm:text-xl font-bold text-brand-900">Daftar Transaksi</h3>
+                    </div>
+                    <!-- Filters: 2-col grid di HP, inline di desktop -->
+                    <div class="grid grid-cols-2 sm:flex sm:flex-wrap sm:items-center gap-2">
+                        <input type="text" id="table-search" oninput="state.page=1; renderTable()" placeholder="Cari nama / kode..." class="col-span-2 sm:col-span-1 bg-brand-50 border border-brand-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-900 w-full sm:w-48">
+                        <input type="month" id="filter-month" onchange="state.page=1; renderTable()" class="w-full sm:w-auto bg-brand-50 border border-brand-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-900">
+                        <select id="filter-status" onchange="state.page=1; renderTable()" class="w-full sm:w-auto bg-brand-50 border border-brand-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-900">
+                            <option value="">Semua Status</option>
+                            <option value="lunas">Lunas</option>
+                            <option value="dp">DP Saja</option>
+                            <option value="belum">Belum Bayar</option>
+                        </select>
+                        <select id="filter-kategori" onchange="state.page=1; renderTable()" class="w-full sm:w-auto bg-brand-50 border border-brand-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-900">
+                            <option value="">Semua Kategori</option>
+                            <option value="kom">Komersil</option>
+                            <option value="non">Non-Komersil</option>
+                        </select>
+                        <button onclick="clearFilters()" class="col-span-2 sm:col-span-1 text-xs font-semibold text-gray-600 hover:text-brand-900 underline py-2">Reset Filter</button>
+                    </div>
+                </div>
+
+                <!-- Desktop: Tabel -->
+                <div class="hidden md:block overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead>
+                            <tr class="bg-brand-100/70 text-brand-900 text-xs uppercase font-bold tracking-wider border-b border-brand-200">
+                                <th class="p-3 sortable" onclick="sortBy('kodeBooking')">Kode <i id="sort-kodeBooking" class="fa-solid fa-sort text-gray-400 ml-1"></i></th>
+                                <th class="p-3 sortable" onclick="sortBy('nama')">Klien <i id="sort-nama" class="fa-solid fa-sort text-gray-400 ml-1"></i></th>
+                                <th class="p-3 sortable" onclick="sortBy('tglSesi')">Jadwal Sesi <i id="sort-tglSesi" class="fa-solid fa-sort text-gray-400 ml-1"></i></th>
+                                <th class="p-3">Paket</th>
+                                <th class="p-3 sortable" onclick="sortBy('total')">Total <i id="sort-total" class="fa-solid fa-sort text-gray-400 ml-1"></i></th>
+                                <th class="p-3">Dibayar</th>
+                                <th class="p-3">Sisa</th>
+                                <th class="p-3 text-center">Status</th>
+                                <th class="p-3 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-table-body" class="divide-y divide-brand-100">
+                            <tr><td colspan="9" class="p-8 text-center text-gray-400 text-sm"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Memuat data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Mobile: Card List -->
+                <div id="admin-card-list" class="md:hidden divide-y divide-brand-100">
+                    <div class="p-8 text-center text-gray-400 text-sm"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Memuat data...</div>
+                </div>
+
+                <div class="p-3 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3 border-t border-brand-100">
+                    <div id="pagination-info" class="text-[11px] sm:text-xs text-gray-500 text-center sm:text-left">-</div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="changePage(-1)" id="btn-prev" class="px-3 py-1.5 text-xs font-semibold bg-white border border-brand-200 rounded-lg hover:bg-brand-50 disabled:opacity-40">Prev</button>
+                        <span id="page-indicator" class="text-xs font-semibold text-brand-900 whitespace-nowrap">1 / 1</span>
+                        <button onclick="changePage(1)" id="btn-next" class="px-3 py-1.5 text-xs font-semibold bg-white border border-brand-200 rounded-lg hover:bg-brand-50 disabled:opacity-40">Next</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Login Gate -->
+    <div id="login-gate" class="fixed inset-0 z-[60] bg-brand-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl border border-brand-200 shadow-xl p-6 sm:p-8 max-w-sm w-full space-y-4 sm:space-y-5 text-center">
+            <div class="w-14 h-14 rounded-full bg-brand-900 flex items-center justify-center text-white font-serif text-2xl mx-auto">P</div>
+            <div>
+                <h2 class="font-serif text-xl font-bold text-brand-900">Area Admin</h2>
+                <p class="text-xs text-gray-500 mt-1">Masukkan kata sandi untuk melanjutkan</p>
+            </div>
+            <input type="password" id="login-password" onkeydown="if(event.key==='Enter'){event.preventDefault();doLogin();}" class="w-full bg-brand-50 border border-brand-200 rounded-xl px-4 py-3 text-sm text-center focus:outline-none focus:ring-2 focus:ring-brand-900" placeholder="••••••••" autocomplete="current-password">
+            <button onclick="doLogin()" id="login-btn" class="w-full bg-brand-900 text-white rounded-xl py-3 font-semibold text-sm hover:bg-brand-800 transition">Masuk</button>
+            <p id="login-error" class="text-xs text-red-500 hidden">Kata sandi salah.</p>
+            <a href="Dashboard.html" class="block text-xs text-gray-400 hover:text-brand-900"><i class="fa-solid fa-arrow-left mr-1"></i>Kembali ke halaman booking</a>
+        </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div id="detail-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-lg w-full p-5 sm:p-8 space-y-4 shadow-2xl max-h-[92vh] sm:max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-brand-100 pb-3">
+                <h3 class="font-serif text-lg sm:text-xl font-bold text-brand-900">Detail Transaksi</h3>
+                <button onclick="closeModal('detail-modal')" class="text-gray-400 hover:text-brand-900 w-9 h-9 flex items-center justify-center"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div id="detail-body" class="space-y-2 text-xs sm:text-sm"></div>
+            <div class="flex flex-wrap gap-2 pt-3 border-t border-brand-100">
+                <button onclick="printInvoice()" class="flex-1 sm:flex-initial px-3 py-2 text-xs font-semibold bg-brand-100 text-brand-900 rounded-lg hover:bg-brand-200"><i class="fa-solid fa-print mr-1"></i>Cetak Invoice</button>
+                <button onclick="sendWAFromDetail()" class="flex-1 sm:flex-initial px-3 py-2 text-xs font-semibold bg-emerald-100 text-emerald-800 rounded-lg hover:bg-emerald-200"><i class="fa-brands fa-whatsapp mr-1"></i>Reminder WA</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Modal — bottom-sheet di HP -->
+    <div id="transaction-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-lg w-full p-5 sm:p-8 space-y-4 shadow-2xl max-h-[92vh] sm:max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-brand-100 pb-3">
+                <h3 id="modal-title" class="font-serif text-lg sm:text-xl font-bold text-brand-900">Tambah Transaksi</h3>
+                <button onclick="closeModal('transaction-modal')" class="text-gray-400 hover:text-brand-900 w-9 h-9 flex items-center justify-center"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form onsubmit="saveTransaction(event)" class="space-y-3">
+                <input type="hidden" id="m-id" value="-1">
+                <div class="grid grid-cols-2 gap-2.5 sm:gap-3">
+                    <div class="col-span-2">
+                        <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">Nama Klien *</label>
+                        <input type="text" id="m-nama" required class="w-full bg-brand-50 border border-brand-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-900">
+                    </div>
+                    <div class="col-span-2 sm:col-span-1">
+                        <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">No. WA</label>
+                        <input type="tel" id="m-nohp" class="w-full bg-brand-50 border border-brand-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-900">
+                    </div>
+                    <div class="col-span-2 sm:col-span-1">
+                        <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">Email</label>
+                        <input type="email" id="m-email" class="w-full bg-brand-50 border border-brand-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-900">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">Tgl Sesi</label>
+                        <input type="date" id="m-tgl-sesi" class="w-full bg-brand-50 border border-brand-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-900">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">Jam</label>
+                        <input type="time" id="m-jam-sesi" class="w-full bg-brand-50 border border-brand-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-900">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">Paket</label>
+                        <input type="text" id="m-paket" placeholder="cth: All Akses + Fotografer - 2 Jam" class="w-full bg-brand-50 border border-brand-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-900">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">Catatan</label>
+                        <textarea id="m-catatan" rows="2" class="w-full bg-brand-50 border border-brand-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-900 resize-none"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">Tgl DP</label>
+                        <input type="date" id="m-tgl-dp" class="w-full bg-brand-50 border border-brand-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-900">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">Nominal DP</label>
+                        <input type="number" id="m-nom-dp" min="0" value="0" class="w-full bg-brand-50 border border-brand-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-900">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">Tgl Lunas</label>
+                        <input type="date" id="m-tgl-lunas" class="w-full bg-brand-50 border border-brand-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-900">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">Nominal Lunas</label>
+                        <input type="number" id="m-nom-lunas" min="0" value="0" class="w-full bg-brand-50 border border-brand-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-900">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">Metode</label>
+                        <select id="m-metode" class="w-full bg-brand-50 border border-brand-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-900">
+                            <option value="transfer">Transfer</option>
+                            <option value="cash">Cash / Offline</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">Kategori</label>
+                        <select id="m-kategori" class="w-full bg-brand-50 border border-brand-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-900">
+                            <option value="non">Non-Komersil</option>
+                            <option value="kom">Komersil</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">Extra Orang</label>
+                        <input type="number" id="m-extra-orang" min="0" value="0" class="w-full bg-brand-50 border border-brand-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-900">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">Extra Edit</label>
+                        <input type="number" id="m-extra-edit" min="0" value="0" class="w-full bg-brand-50 border border-brand-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-900">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">Total Nilai Transaksi *</label>
+                        <input type="number" id="m-total" min="0" value="0" required class="w-full bg-brand-50 border border-brand-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-900 font-bold">
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2 pt-3 border-t border-brand-100">
+                    <button type="button" onclick="closeModal('transaction-modal')" class="px-4 py-2 text-sm font-semibold bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200">Batal</button>
+                    <button type="submit" id="btn-save-tx" class="px-4 py-2 text-sm font-semibold bg-brand-900 text-white rounded-lg hover:bg-brand-800 disabled:opacity-60">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Modal -->
+    <div id="delete-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl">
+            <div class="text-center">
+                <div class="w-14 h-14 rounded-full bg-red-100 text-red-500 flex items-center justify-center text-2xl mx-auto"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                <h3 class="font-serif text-lg font-bold text-brand-900 mt-3">Hapus Transaksi?</h3>
+                <p class="text-xs text-gray-500 mt-1" id="delete-info">-</p>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="closeModal('delete-modal')" class="flex-1 px-4 py-2 text-sm font-semibold bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200">Batal</button>
+                <button id="btn-confirm-delete" onclick="confirmDelete()" class="flex-1 px-4 py-2 text-sm font-semibold bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-60">Hapus</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 bg-brand-900 text-white px-4 sm:px-5 py-3 rounded-2xl shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 z-[60] text-xs sm:text-sm flex items-center space-x-2 sm:space-x-3 max-w-[calc(100vw-2rem)] sm:max-w-xs">
+        <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 text-lg shrink-0"></i>
+        <span id="toast-message">Berhasil!</span>
+    </div>
+
+    <div id="print-area" class="hidden"></div>
+
+    <script>
+        const API_URL = 'https://script.google.com/macros/s/AKfycbzI8qOcN59e-wqgIzuY3L-6fRJEd9EFoHetjhyam58yWWRmdddJCd6X7fcMP0y6-y5i/exec';
+        const SESSION_KEY = 'ph_admin_token';
+        const IDLE_TIMEOUT_MS = 30 * 60 * 1000;
+
+        const state = {
+            transactions: [],
+            filtered: [],
+            page: 1,
+            perPage: 10,
+            sortBy: 'id',
+            sortDir: 'desc',
+            currentDetail: null,
+            confirmDeleteId: null,
+            lastActivity: Date.now(),
+            autoRefreshTimer: null
+        };
+
+        async function apiGet(params) {
+            const qs = Object.keys(params).map(k => `${encodeURIComponent(k)}=${encodeURIComponent(params[k])}`).join('&');
+            const res = await fetch(`${API_URL}?${qs}`);
+            return res.json();
+        }
+        async function apiPost(payload) {
+            const res = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(payload)
+            });
+            return res.json();
+        }
+        function getToken() { return sessionStorage.getItem(SESSION_KEY) || ''; }
+
+        async function doLogin() {
+            const pw = document.getElementById('login-password').value;
+            if (!pw) return;
+            const btn = document.getElementById('login-btn');
+            const orig = btn.innerHTML;
+            btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            try {
+                const res = await apiPost({ action: 'login', password: pw });
+                if (res.status === 'success') {
+                    sessionStorage.setItem(SESSION_KEY, res.data.token);
+                    hideGate();
+                } else {
+                    document.getElementById('login-error').classList.remove('hidden');
+                    document.getElementById('login-error').innerText = res.message || 'Password salah.';
+                }
+            } catch (err) {
+                document.getElementById('login-error').classList.remove('hidden');
+                document.getElementById('login-error').innerText = 'Gagal terhubung ke server.';
+            } finally {
+                btn.disabled = false; btn.innerHTML = orig;
+            }
+        }
+
+        function hideGate() {
+            document.getElementById('login-gate').classList.add('hidden');
+            document.getElementById('dashboard-content').classList.remove('hidden');
+            document.getElementById('logout-btn').classList.remove('hidden');
+            loadTransactions();
+        }
+
+        async function logout() {
+            const token = getToken();
+            sessionStorage.removeItem(SESSION_KEY);
+            if (token) apiPost({ action: 'logout', token }).catch(() => {});
+            location.reload();
+        }
+
+        function trackActivity() { state.lastActivity = Date.now(); }
+        function checkIdle() {
+            if (!getToken()) return;
+            if (Date.now() - state.lastActivity > IDLE_TIMEOUT_MS) {
+                showToast('Sesi berakhir karena tidak aktif.', 'error');
+                setTimeout(logout, 1500);
+            }
+        }
+
+        function toggleAutoRefresh() {
+            const on = document.getElementById('auto-refresh-toggle').checked;
+            if (state.autoRefreshTimer) clearInterval(state.autoRefreshTimer);
+            if (on) {
+                state.autoRefreshTimer = setInterval(() => loadTransactions(true), 60000);
+                showToast('Auto-refresh aktif (60s)');
+            } else showToast('Auto-refresh dimatikan');
+        }
+
+        async function loadTransactions(silent) {
+            if (!silent) {
+                document.getElementById('admin-table-body').innerHTML = '<tr><td colspan="9" class="p-8 text-center text-gray-400 text-sm"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Memuat data...</td></tr>';
+                document.getElementById('admin-card-list').innerHTML = '<div class="p-8 text-center text-gray-400 text-sm"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Memuat data...</div>';
+            }
+            try {
+                const res = await apiGet({ action: 'list', token: getToken() });
+                if (res.status === 'success') {
+                    state.transactions = res.data || [];
+                    renderStats();
+                    renderUpcoming();
+                    renderTable();
+                } else if (res.message && res.message.toLowerCase().includes('unauth')) {
+                    logout();
+                } else if (!silent) showToast('Gagal: ' + (res.message || 'error'), 'error');
+            } catch (err) {
+                console.error(err);
+                if (!silent) showToast('Gagal terhubung ke server.', 'error');
+            }
+        }
+
+        function totalMasuk(tx) { return (Number(tx.nomDp) || 0) + (Number(tx.nomLunas) || 0); }
+        function sisaBayar(tx) { return Math.max(0, (Number(tx.total) || 0) - totalMasuk(tx)); }
+        function statusOf(tx) {
+            const masuk = totalMasuk(tx), total = Number(tx.total) || 0;
+            if (masuk > 0 && masuk >= total) return { label: 'Lunas', cls: 'bg-emerald-100 text-emerald-800', key: 'lunas' };
+            if (masuk > 0) return { label: 'DP Saja', cls: 'bg-amber-100 text-amber-800', key: 'dp' };
+            return { label: 'Belum Bayar', cls: 'bg-blue-100 text-blue-800', key: 'belum' };
+        }
+        function escapeHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+        function renderStats() {
+            const now = new Date();
+            const curMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+            let pendapatanBulanIni = 0, totalPiutang = 0, kom = 0, non = 0;
+            state.transactions.forEach(tx => {
+                const sisa = sisaBayar(tx);
+                const dpDate = String(tx.tglDp || '').slice(0, 7);
+                const lunasDate = String(tx.tglLunas || '').slice(0, 7);
+                if (dpDate === curMonth) pendapatanBulanIni += Number(tx.nomDp) || 0;
+                if (lunasDate === curMonth) pendapatanBulanIni += Number(tx.nomLunas) || 0;
+                totalPiutang += sisa;
+                if (tx.kategori === 'kom') kom++; else non++;
+            });
+            document.getElementById('stat-total-pendapatan').innerText = `Rp ${pendapatanBulanIni.toLocaleString('id-ID')}`;
+            document.getElementById('stat-total-klien').innerText = state.transactions.length + ' Klien';
+            document.getElementById('stat-total-piutang').innerText = `Rp ${totalPiutang.toLocaleString('id-ID')}`;
+            document.getElementById('stat-perbandingan-komersil').innerText = `${kom} / ${non}`;
+            document.getElementById('stat-month-label').innerText = now.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+        }
+
+        function renderUpcoming() {
+            const box = document.getElementById('upcoming-sessions');
+            const today = new Date(); today.setHours(0,0,0,0);
+            const weekAhead = new Date(today); weekAhead.setDate(weekAhead.getDate() + 7);
+            const upcoming = state.transactions
+                .filter(tx => {
+                    if (!tx.tglSesi) return false;
+                    const d = new Date(tx.tglSesi + 'T00:00:00');
+                    return d >= today && d <= weekAhead;
+                })
+                .sort((a, b) => (a.tglSesi + a.jamSesi).localeCompare(b.tglSesi + b.jamSesi))
+                .slice(0, 6);
+            if (upcoming.length === 0) {
+                box.innerHTML = '<div class="col-span-full text-center text-xs text-gray-400 py-4">Tidak ada sesi dalam 7 hari ke depan.</div>';
+                return;
+            }
+            box.innerHTML = upcoming.map(tx => `
+                <div class="p-3 rounded-xl border border-brand-200 bg-brand-50">
+                    <div class="flex justify-between items-start gap-2">
+                        <div class="font-semibold text-sm text-brand-900 truncate">${escapeHtml(tx.nama)}</div>
+                        <span class="text-xs font-bold text-brand-900 shrink-0">${escapeHtml(tx.jamSesi || '-')}</span>
+                    </div>
+                    <div class="text-[11px] text-gray-600 mt-0.5 truncate">${escapeHtml(tx.tglSesi)} · ${escapeHtml(tx.paket || '-')}</div>
+                </div>
+            `).join('');
+        }
+
+        function applyFilters() {
+            const q = document.getElementById('table-search').value.toLowerCase();
+            const fMonth = document.getElementById('filter-month').value;
+            const fStatus = document.getElementById('filter-status').value;
+            const fKat = document.getElementById('filter-kategori').value;
+
+            let list = state.transactions.filter(tx => {
+                if (q && !((tx.nama || '').toLowerCase().includes(q) || (tx.kodeBooking || '').toLowerCase().includes(q))) return false;
+                if (fMonth) {
+                    const dpM = String(tx.tglDp || '').slice(0, 7);
+                    const lunasM = String(tx.tglLunas || '').slice(0, 7);
+                    const sesiM = String(tx.tglSesi || '').slice(0, 7);
+                    if (dpM !== fMonth && lunasM !== fMonth && sesiM !== fMonth) return false;
+                }
+                if (fStatus && statusOf(tx).key !== fStatus) return false;
+                if (fKat && tx.kategori !== fKat) return false;
+                return true;
+            });
+
+            const dir = state.sortDir === 'asc' ? 1 : -1;
+            const sk = state.sortBy;
+            list.sort((a, b) => {
+                let av = a[sk], bv = b[sk];
+                if (sk === 'total') { av = Number(av) || 0; bv = Number(bv) || 0; }
+                else if (sk === 'tglSesi') { av = (a.tglSesi || '') + (a.jamSesi || ''); bv = (b.tglSesi || '') + (b.jamSesi || ''); }
+                else { av = String(av || '').toLowerCase(); bv = String(bv || '').toLowerCase(); }
+                return av < bv ? -1 * dir : av > bv ? 1 * dir : 0;
+            });
+
+            state.filtered = list;
+            return list;
+        }
+
+        function renderTable() {
+            const list = applyFilters();
+            const totalPage = Math.max(1, Math.ceil(list.length / state.perPage));
+            if (state.page > totalPage) state.page = totalPage;
+            const start = (state.page - 1) * state.perPage;
+            const pageData = list.slice(start, start + state.perPage);
+            const tbody = document.getElementById('admin-table-body');
+            const cardList = document.getElementById('admin-card-list');
+
+            if (pageData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="p-8 text-center text-gray-400 text-sm">Tidak ada transaksi yang cocok.</td></tr>';
+                cardList.innerHTML = '<div class="p-8 text-center text-gray-400 text-sm">Tidak ada transaksi yang cocok.</div>';
+            } else {
+                // Desktop table rows
+                tbody.innerHTML = pageData.map(tx => {
+                    const status = statusOf(tx);
+                    const masuk = totalMasuk(tx), sisa = sisaBayar(tx);
+                    return `
+                        <tr class="hover:bg-brand-50/50 transition">
+                            <td class="p-3 font-mono text-xs text-gray-700">${escapeHtml(tx.kodeBooking || '-')}</td>
+                            <td class="p-3">
+                                <div class="font-bold text-brand-900">${escapeHtml(tx.nama || '-')}</div>
+                                <div class="text-xs text-gray-500">${escapeHtml(tx.noHp || '-')}</div>
+                            </td>
+                            <td class="p-3 text-xs">
+                                <div class="font-semibold">${escapeHtml(tx.tglSesi || '-')}</div>
+                                <div class="text-gray-500">${escapeHtml(tx.jamSesi || '-')}</div>
+                            </td>
+                            <td class="p-3 text-xs text-gray-700 max-w-[180px]">${escapeHtml(tx.paket || '-')}</td>
+                            <td class="p-3 font-bold text-brand-900">Rp ${(Number(tx.total) || 0).toLocaleString('id-ID')}</td>
+                            <td class="p-3 text-sm">Rp ${masuk.toLocaleString('id-ID')}</td>
+                            <td class="p-3 text-sm ${sisa > 0 ? 'text-amber-600 font-semibold' : 'text-gray-400'}">Rp ${sisa.toLocaleString('id-ID')}</td>
+                            <td class="p-3 text-center"><span class="px-2 py-0.5 ${status.cls} rounded-full text-xs font-semibold">${status.label}</span></td>
+                            <td class="p-3 text-center">
+                                <div class="inline-flex space-x-1">
+                                    <button onclick="openDetail(${tx.id})" class="w-7 h-7 rounded-lg bg-brand-100 text-brand-900 hover:bg-brand-900 hover:text-white transition" title="Detail"><i class="fa-solid fa-eye text-xs"></i></button>
+                                    <button onclick="openEdit(${tx.id})" class="w-7 h-7 rounded-lg bg-brand-100 text-brand-900 hover:bg-brand-900 hover:text-white transition" title="Edit"><i class="fa-solid fa-pen text-xs"></i></button>
+                                    ${status.key !== 'lunas' ? `<button onclick="quickMarkLunas(${tx.id})" class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 hover:bg-emerald-500 hover:text-white transition" title="Tandai Lunas"><i class="fa-solid fa-check text-xs"></i></button>` : ''}
+                                    <button onclick="openDelete(${tx.id})" class="w-7 h-7 rounded-lg bg-red-100 text-red-600 hover:bg-red-500 hover:text-white transition" title="Hapus"><i class="fa-solid fa-trash text-xs"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+
+                // Mobile cards
+                cardList.innerHTML = pageData.map(tx => {
+                    const status = statusOf(tx);
+                    const masuk = totalMasuk(tx), sisa = sisaBayar(tx);
+                    return `
+                        <div class="p-3.5 space-y-2.5">
+                            <div class="flex items-start justify-between gap-2">
+                                <div class="min-w-0 flex-1">
+                                    <div class="font-bold text-brand-900 truncate">${escapeHtml(tx.nama || '-')}</div>
+                                    <div class="font-mono text-[10px] text-gray-500 truncate">${escapeHtml(tx.kodeBooking || '-')}</div>
+                                </div>
+                                <span class="px-2 py-0.5 ${status.cls} rounded-full text-[10px] font-semibold shrink-0">${status.label}</span>
+                            </div>
+                            <div class="text-[11px] text-gray-600 leading-relaxed">
+                                <div><i class="fa-solid fa-clock mr-1 text-gray-400"></i>${escapeHtml(tx.tglSesi || '-')} · ${escapeHtml(tx.jamSesi || '-')}</div>
+                                <div class="truncate"><i class="fa-solid fa-camera mr-1 text-gray-400"></i>${escapeHtml(tx.paket || '-')}</div>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2 pt-2 border-t border-brand-100 text-[11px]">
+                                <div>
+                                    <div class="text-gray-500">Total</div>
+                                    <div class="font-bold text-brand-900 break-words">Rp ${(Number(tx.total) || 0).toLocaleString('id-ID')}</div>
+                                </div>
+                                <div>
+                                    <div class="text-gray-500">Dibayar</div>
+                                    <div class="font-semibold break-words">Rp ${masuk.toLocaleString('id-ID')}</div>
+                                </div>
+                                <div>
+                                    <div class="text-gray-500">Sisa</div>
+                                    <div class="font-semibold ${sisa > 0 ? 'text-amber-600' : 'text-gray-400'} break-words">Rp ${sisa.toLocaleString('id-ID')}</div>
+                                </div>
+                            </div>
+                            <div class="flex gap-1.5 pt-1">
+                                <button onclick="openDetail(${tx.id})" class="flex-1 py-2 text-[11px] font-semibold bg-brand-100 text-brand-900 rounded-lg hover:bg-brand-200"><i class="fa-solid fa-eye mr-1"></i>Detail</button>
+                                <button onclick="openEdit(${tx.id})" class="flex-1 py-2 text-[11px] font-semibold bg-brand-100 text-brand-900 rounded-lg hover:bg-brand-200"><i class="fa-solid fa-pen mr-1"></i>Edit</button>
+                                ${status.key !== 'lunas' ? `<button onclick="quickMarkLunas(${tx.id})" class="py-2 px-2.5 text-[11px] font-semibold bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200" title="Tandai Lunas"><i class="fa-solid fa-check"></i></button>` : ''}
+                                <button onclick="openDelete(${tx.id})" class="py-2 px-2.5 text-[11px] font-semibold bg-red-100 text-red-600 rounded-lg hover:bg-red-200" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            document.getElementById('pagination-info').innerText = list.length === 0 ? '0 data' : `${start + 1}-${Math.min(start + state.perPage, list.length)} dari ${list.length}`;
+            document.getElementById('page-indicator').innerText = `${state.page} / ${totalPage}`;
+            document.getElementById('btn-prev').disabled = state.page <= 1;
+            document.getElementById('btn-next').disabled = state.page >= totalPage;
+
+            ['kodeBooking', 'nama', 'tglSesi', 'total'].forEach(k => {
+                const el = document.getElementById('sort-' + k);
+                if (!el) return;
+                el.className = 'fa-solid ml-1 ' + (state.sortBy === k ? (state.sortDir === 'asc' ? 'fa-sort-up text-brand-900' : 'fa-sort-down text-brand-900') : 'fa-sort text-gray-400');
+            });
+        }
+
+        function sortBy(key) {
+            if (state.sortBy === key) state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc';
+            else { state.sortBy = key; state.sortDir = 'asc'; }
+            renderTable();
+        }
+        function changePage(delta) { state.page += delta; renderTable(); }
+        function clearFilters() {
+            document.getElementById('table-search').value = '';
+            document.getElementById('filter-month').value = '';
+            document.getElementById('filter-status').value = '';
+            document.getElementById('filter-kategori').value = '';
+            state.page = 1; renderTable();
+        }
+
+        function openDetail(id) {
+            const tx = state.transactions.find(t => Number(t.id) === Number(id));
+            if (!tx) return;
+            state.currentDetail = tx;
+            const masuk = totalMasuk(tx), sisa = sisaBayar(tx), status = statusOf(tx);
+            document.getElementById('detail-body').innerHTML = `
+                <div class="flex justify-between gap-3 border-b border-brand-100 pb-2"><span class="text-gray-500 shrink-0">Kode</span><span class="font-mono font-bold break-all text-right">${escapeHtml(tx.kodeBooking || '-')}</span></div>
+                <div class="flex justify-between gap-3"><span class="text-gray-500 shrink-0">Nama</span><span class="font-semibold text-right break-words">${escapeHtml(tx.nama || '-')}</span></div>
+                <div class="flex justify-between gap-3"><span class="text-gray-500 shrink-0">No. WA</span><span class="font-semibold text-right">${escapeHtml(tx.noHp || '-')}</span></div>
+                <div class="flex justify-between gap-3"><span class="text-gray-500 shrink-0">Email</span><span class="font-semibold text-right break-all">${escapeHtml(tx.email || '-')}</span></div>
+                <div class="flex justify-between gap-3"><span class="text-gray-500 shrink-0">Jadwal</span><span class="font-semibold text-right">${escapeHtml(tx.tglSesi || '-')} ${escapeHtml(tx.jamSesi || '')}</span></div>
+                <div class="flex justify-between gap-3"><span class="text-gray-500 shrink-0">Paket</span><span class="font-semibold text-right">${escapeHtml(tx.paket || '-')}</span></div>
+                <div class="flex justify-between gap-3"><span class="text-gray-500 shrink-0">Kategori</span><span class="font-semibold">${tx.kategori === 'kom' ? 'Komersil' : 'Non-Komersil'}</span></div>
+                <div class="flex justify-between gap-3"><span class="text-gray-500 shrink-0">Extra Org / Edit</span><span class="font-semibold">${tx.extraOrang || 0} / ${tx.extraEdit || 0}</span></div>
+                ${tx.catatan ? `<div><div class="text-gray-500 mb-1">Catatan:</div><div class="text-xs bg-brand-50 p-2 rounded-lg break-words">${escapeHtml(tx.catatan)}</div></div>` : ''}
+                <div class="border-t border-brand-100 pt-2 mt-2 space-y-1">
+                    <div class="flex justify-between gap-3"><span class="text-gray-500">Total</span><span class="font-bold whitespace-nowrap">Rp ${(Number(tx.total) || 0).toLocaleString('id-ID')}</span></div>
+                    <div class="flex justify-between gap-3"><span class="text-gray-500">DP (${escapeHtml(tx.tglDp || '-')})</span><span class="whitespace-nowrap">Rp ${(Number(tx.nomDp) || 0).toLocaleString('id-ID')}</span></div>
+                    <div class="flex justify-between gap-3"><span class="text-gray-500">Lunas (${escapeHtml(tx.tglLunas || '-')})</span><span class="whitespace-nowrap">Rp ${(Number(tx.nomLunas) || 0).toLocaleString('id-ID')}</span></div>
+                    <div class="flex justify-between gap-3"><span class="text-gray-500">Dibayar</span><span class="font-semibold whitespace-nowrap">Rp ${masuk.toLocaleString('id-ID')}</span></div>
+                    <div class="flex justify-between gap-3"><span class="text-gray-500">Sisa</span><span class="font-semibold whitespace-nowrap ${sisa > 0 ? 'text-amber-600' : 'text-emerald-600'}">Rp ${sisa.toLocaleString('id-ID')}</span></div>
+                    <div class="flex justify-between gap-3 items-center"><span class="text-gray-500">Status</span><span class="px-2 py-0.5 ${status.cls} rounded-full text-xs font-semibold">${status.label}</span></div>
+                </div>
+            `;
+            document.getElementById('detail-modal').classList.remove('hidden');
+        }
+
+        function printInvoice() {
+            const tx = state.currentDetail;
+            if (!tx) return;
+            const masuk = totalMasuk(tx), sisa = sisaBayar(tx);
+            const html = `
+                <div style="font-family:Arial,sans-serif;padding:40px;max-width:600px;margin:auto;">
+                    <div style="border-bottom:2px solid #2b2523;padding-bottom:12px;margin-bottom:20px;">
+                        <h1 style="font-family:Georgia,serif;margin:0;color:#2b2523;">PotretHouse Studio</h1>
+                        <p style="margin:4px 0;font-size:12px;color:#666;">Jl. Contoh Studio No. 12, Yogyakarta · 0813-2419-2250</p>
+                    </div>
+                    <h2 style="font-size:16px;">INVOICE #${escapeHtml(tx.kodeBooking || '-')}</h2>
+                    <table style="width:100%;font-size:13px;margin-top:16px;border-collapse:collapse;">
+                        <tr><td style="padding:6px 0;color:#666;">Nama Klien</td><td style="padding:6px 0;font-weight:bold;">${escapeHtml(tx.nama)}</td></tr>
+                        <tr><td style="padding:6px 0;color:#666;">No. WA</td><td style="padding:6px 0;">${escapeHtml(tx.noHp || '-')}</td></tr>
+                        <tr><td style="padding:6px 0;color:#666;">Jadwal Sesi</td><td style="padding:6px 0;">${escapeHtml(tx.tglSesi || '-')} ${escapeHtml(tx.jamSesi || '')}</td></tr>
+                        <tr><td style="padding:6px 0;color:#666;">Paket</td><td style="padding:6px 0;">${escapeHtml(tx.paket || '-')}</td></tr>
+                        <tr><td style="padding:6px 0;color:#666;">Kategori</td><td style="padding:6px 0;">${tx.kategori === 'kom' ? 'Komersil' : 'Non-Komersil'}</td></tr>
+                    </table>
+                    <table style="width:100%;font-size:13px;margin-top:20px;border-top:1px solid #ddd;border-bottom:1px solid #ddd;padding:8px 0;">
+                        <tr><td style="padding:6px 0;">Total Biaya</td><td style="text-align:right;padding:6px 0;">Rp ${(Number(tx.total) || 0).toLocaleString('id-ID')}</td></tr>
+                        <tr><td style="padding:6px 0;">DP (${escapeHtml(tx.tglDp || '-')})</td><td style="text-align:right;padding:6px 0;">Rp ${(Number(tx.nomDp) || 0).toLocaleString('id-ID')}</td></tr>
+                        <tr><td style="padding:6px 0;">Pelunasan (${escapeHtml(tx.tglLunas || '-')})</td><td style="text-align:right;padding:6px 0;">Rp ${(Number(tx.nomLunas) || 0).toLocaleString('id-ID')}</td></tr>
+                        <tr><td style="padding:6px 0;font-weight:bold;border-top:1px solid #ddd;">Sisa</td><td style="text-align:right;padding:6px 0;font-weight:bold;border-top:1px solid #ddd;">Rp ${sisa.toLocaleString('id-ID')}</td></tr>
+                    </table>
+                    <p style="font-size:11px;color:#999;margin-top:40px;text-align:center;">Terima kasih telah mempercayakan momen Anda kepada PotretHouse Studio.</p>
+                </div>
+            `;
+            const w = window.open('', '_blank', 'width=800,height=600');
+            w.document.write(html);
+            w.document.close();
+            setTimeout(() => { w.print(); }, 300);
+        }
+
+        function sendWAFromDetail() {
+            const tx = state.currentDetail;
+            if (!tx || !tx.noHp) return showToast('Nomor WA tidak tersedia.', 'error');
+            let phone = String(tx.noHp).replace(/\D/g, '');
+            if (phone.startsWith('0')) phone = '62' + phone.slice(1);
+            const text = encodeURIComponent(
+                `Halo ${tx.nama}, ini reminder dari PotretHouse Studio.\n\nKode Booking: ${tx.kodeBooking}\nJadwal Sesi: ${tx.tglSesi} ${tx.jamSesi}\nPaket: ${tx.paket}\nSisa Pembayaran: Rp ${sisaBayar(tx).toLocaleString('id-ID')}\n\nMohon konfirmasi kehadiran. Terima kasih!`
+            );
+            window.open(`https://wa.me/${phone}?text=${text}`, '_blank');
+        }
+
+        function openAddModal() {
+            document.getElementById('modal-title').innerText = 'Tambah Transaksi Manual';
+            document.getElementById('m-id').value = '-1';
+            ['nama','nohp','email','tgl-sesi','jam-sesi','paket','catatan','tgl-dp','tgl-lunas'].forEach(f => document.getElementById('m-' + f).value = '');
+            ['nom-dp','nom-lunas','total','extra-orang','extra-edit'].forEach(f => document.getElementById('m-' + f).value = '0');
+            document.getElementById('m-metode').value = 'transfer';
+            document.getElementById('m-kategori').value = 'non';
+            document.getElementById('transaction-modal').classList.remove('hidden');
+        }
+
+        function openEdit(id) {
+            const tx = state.transactions.find(t => Number(t.id) === Number(id));
+            if (!tx) return;
+            document.getElementById('modal-title').innerText = `Edit: ${tx.nama}`;
+            document.getElementById('m-id').value = tx.id;
+            document.getElementById('m-nama').value = tx.nama || '';
+            document.getElementById('m-nohp').value = tx.noHp || '';
+            document.getElementById('m-email').value = tx.email || '';
+            document.getElementById('m-tgl-sesi').value = tx.tglSesi || '';
+            document.getElementById('m-jam-sesi').value = tx.jamSesi || '';
+            document.getElementById('m-paket').value = tx.paket || '';
+            document.getElementById('m-catatan').value = tx.catatan || '';
+            document.getElementById('m-tgl-dp').value = tx.tglDp || '';
+            document.getElementById('m-nom-dp').value = tx.nomDp || 0;
+            document.getElementById('m-tgl-lunas').value = tx.tglLunas || '';
+            document.getElementById('m-nom-lunas').value = tx.nomLunas || 0;
+            document.getElementById('m-metode').value = tx.metode || 'transfer';
+            document.getElementById('m-kategori').value = tx.kategori || 'non';
+            document.getElementById('m-extra-orang').value = tx.extraOrang || 0;
+            document.getElementById('m-extra-edit').value = tx.extraEdit || 0;
+            document.getElementById('m-total').value = tx.total || 0;
+            document.getElementById('transaction-modal').classList.remove('hidden');
+        }
+
+        async function saveTransaction(e) {
+            e.preventDefault();
+            const id = parseInt(document.getElementById('m-id').value);
+            const data = {
+                nama: document.getElementById('m-nama').value.trim(),
+                noHp: document.getElementById('m-nohp').value.trim(),
+                email: document.getElementById('m-email').value.trim(),
+                tglSesi: document.getElementById('m-tgl-sesi').value,
+                jamSesi: document.getElementById('m-jam-sesi').value,
+                paket: document.getElementById('m-paket').value.trim(),
+                catatan: document.getElementById('m-catatan').value.trim(),
+                tglDp: document.getElementById('m-tgl-dp').value,
+                nomDp: parseInt(document.getElementById('m-nom-dp').value) || 0,
+                tglLunas: document.getElementById('m-tgl-lunas').value,
+                nomLunas: parseInt(document.getElementById('m-nom-lunas').value) || 0,
+                metode: document.getElementById('m-metode').value,
+                kategori: document.getElementById('m-kategori').value,
+                extraOrang: parseInt(document.getElementById('m-extra-orang').value) || 0,
+                extraEdit: parseInt(document.getElementById('m-extra-edit').value) || 0,
+                total: parseInt(document.getElementById('m-total').value) || 0
+            };
+
+            if (!data.nama) return showToast('Nama wajib diisi.', 'error');
+            if (data.nomDp > data.total) return showToast('DP tidak boleh melebihi total.', 'error');
+            if (data.nomDp + data.nomLunas > data.total) return showToast('Total pembayaran melebihi nilai transaksi.', 'error');
+
+            const btn = document.getElementById('btn-save-tx');
+            const orig = btn.innerHTML;
+            btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i>Menyimpan...';
+
+            try {
+                let res;
+                if (id === -1) res = await apiPost({ action: 'create', data });
+                else { data.id = id; res = await apiPost({ action: 'update', data, token: getToken() }); }
+
+                if (res.status === 'success') {
+                    showToast(id === -1 ? 'Transaksi ditambahkan!' : 'Transaksi diperbarui!');
+                    closeModal('transaction-modal');
+                    loadTransactions(true);
+                } else showToast('Gagal: ' + (res.message || 'error'), 'error');
+            } catch (err) {
+                showToast('Gagal terhubung ke server.', 'error');
+            } finally {
+                btn.disabled = false; btn.innerHTML = orig;
+            }
+        }
+
+        function openDelete(id) {
+            const tx = state.transactions.find(t => Number(t.id) === Number(id));
+            if (!tx) return;
+            state.confirmDeleteId = id;
+            document.getElementById('delete-info').innerText = `${tx.kodeBooking || '-'} · ${tx.nama}`;
+            document.getElementById('delete-modal').classList.remove('hidden');
+        }
+
+        async function confirmDelete() {
+            const id = state.confirmDeleteId;
+            if (!id) return;
+            const btn = document.getElementById('btn-confirm-delete');
+            btn.disabled = true;
+            try {
+                const res = await apiPost({ action: 'delete', id, token: getToken() });
+                if (res.status === 'success') {
+                    showToast('Transaksi dihapus.');
+                    closeModal('delete-modal');
+                    loadTransactions(true);
+                } else showToast('Gagal: ' + (res.message || 'error'), 'error');
+            } catch (err) { showToast('Gagal terhubung ke server.', 'error'); }
+            finally { btn.disabled = false; }
+        }
+
+        async function quickMarkLunas(id) {
+            const tx = state.transactions.find(t => Number(t.id) === Number(id));
+            if (!tx) return;
+            const sisa = sisaBayar(tx);
+            if (sisa <= 0) return;
+            if (!confirm(`Tandai lunas untuk ${tx.nama}? Akan menambahkan pelunasan Rp ${sisa.toLocaleString('id-ID')} hari ini.`)) return;
+            const today = new Date().toISOString().split('T')[0];
+            const data = { id: tx.id, tglLunas: today, nomLunas: (Number(tx.nomLunas) || 0) + sisa };
+            try {
+                const res = await apiPost({ action: 'update', data, token: getToken() });
+                if (res.status === 'success') { showToast('Ditandai lunas.'); loadTransactions(true); }
+                else showToast('Gagal: ' + (res.message || 'error'), 'error');
+            } catch (err) { showToast('Gagal terhubung ke server.', 'error'); }
+        }
+
+        function exportCSV() {
+            const list = applyFilters();
+            if (list.length === 0) return showToast('Tidak ada data untuk di-export.', 'error');
+            const headers = ['Kode Booking','Nama','No WA','Email','Tgl Sesi','Jam Sesi','Paket','Kategori','Extra Orang','Extra Edit','Tgl DP','Nom DP','Tgl Lunas','Nom Lunas','Metode','Total','Dibayar','Sisa','Status','Catatan'];
+            const rows = list.map(tx => [
+                tx.kodeBooking, tx.nama, tx.noHp, tx.email, tx.tglSesi, tx.jamSesi, tx.paket,
+                tx.kategori === 'kom' ? 'Komersil' : 'Non-Komersil', tx.extraOrang, tx.extraEdit,
+                tx.tglDp, tx.nomDp, tx.tglLunas, tx.nomLunas, tx.metode,
+                tx.total, totalMasuk(tx), sisaBayar(tx), statusOf(tx).label, tx.catatan || ''
+            ]);
+            const csv = [headers, ...rows].map(r => r.map(c => `"${String(c == null ? '' : c).replace(/"/g, '""')}"`).join(',')).join('\n');
+            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `PotretHouse_${new Date().toISOString().slice(0, 10)}.csv`;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('CSV berhasil diunduh.');
+        }
+
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toast-icon');
+            document.getElementById('toast-message').innerText = message;
+            icon.className = type === 'error' ? 'fa-solid fa-circle-exclamation text-red-400 text-lg shrink-0' : 'fa-solid fa-circle-check text-emerald-400 text-lg shrink-0';
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3500);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            ['click','keydown','mousemove','scroll'].forEach(ev => document.addEventListener(ev, trackActivity, { passive: true }));
+            setInterval(checkIdle, 60000);
+            if (getToken()) hideGate();
+        });
+    </script>
+</body>
+</html>
